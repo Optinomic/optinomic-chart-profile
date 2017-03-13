@@ -2,6 +2,7 @@
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../iron-media-query/iron-media-query.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <!--
 `optinomic-chart-profile`
 Profile Charts
@@ -172,6 +173,67 @@ Profile Charts
             opacity: 1;
         }
         
+        .fade_in {
+            -webkit-animation: fadein 2s;
+            /* Safari, Chrome and Opera > 12.1 */
+            -moz-animation: fadein 2s;
+            /* Firefox < 16 */
+            -ms-animation: fadein 2s;
+            /* Internet Explorer */
+            -o-animation: fadein 2s;
+            /* Opera < 12.1 */
+            animation: fadein 2s;
+        }
+        
+        @keyframes fadein {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        /* Firefox < 16 */
+        
+        @-moz-keyframes fadein {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        /* Safari, Chrome and Opera > 12.1 */
+        
+        @-webkit-keyframes fadein {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        /* Internet Explorer */
+        
+        @-ms-keyframes fadein {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        /* Opera < 12.1 */
+        
+        @-o-keyframes fadein {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
         .start_container {
             margin-bottom: 24px;
         }
@@ -200,30 +262,38 @@ Profile Charts
             <!-- SVG - Grafik -->
             <div id="svg_grafic" class="svg_grafic">
                 <div class="svg_grafic_inner">
-                    <svg-container id="SvgContainer" view-box$="0 0 100 [[def.svg_height]]" width="798" height$="[[def.svg_height_style]]">
-                        <svg-component is="g" id="baseGrid">
-                            <template is="dom-repeat" items="[[scales]]" as="scale">
-                                <svg-component is="line" x1="0" y1$="[[scale.bottomline]]" x2="100" y2$="[[scale.bottomline]]" stroke="#D7CCC8" stroke-width="0.5">
-                                </svg-component>
-                                <template is="dom-if" if="[[scale.first]]">
-                                    <svg-component is="line" x1="0" y1$="[[scale.topline]]" x2="100" y2$="[[scale.topline]]" stroke="#D7CCC8" stroke-width="0.5">
+                    <template is="dom-if" if="{{def.svg_width_set}}">
+                        <svg-container id="SvgContainer" view-box$="0 0 100 [[def.svg_height]]" width$="[[def.svg_width_100]]" height$="[[def.svg_height_style]]">
+                            <svg-component is="g" id="baseGrid">
+                                <template is="dom-repeat" items="[[scales]]" as="scale">
+                                    <svg-component is="line" x1="0" y1$="[[scale.bottomline]]" x2$="[[def.svg_width_100]]" y2$="[[scale.bottomline]]" stroke="#D7CCC8" stroke-width="0.5">
+                                    </svg-component>
+                                    <template is="dom-if" if="[[scale.first]]">
+                                        <svg-component is="line" x1="0" y1$="[[scale.topline]]" x2$="[[def.svg_width_100]]" y2$="[[scale.topline]]" stroke="#D7CCC8" stroke-width="0.5">
+                                        </svg-component>
+                                    </template>
+                                    <svg-component is="line" x1="0" y1$="[[scale.baseline]]" x2$="[[def.svg_width_100]]" y2$="[[scale.baseline]]" stroke="#BCAAA4" stroke-width="1">
                                     </svg-component>
                                 </template>
-                                <svg-component is="line" x1="0" y1$="[[scale.baseline]]" x2="100" y2$="[[scale.baseline]]" stroke="#BCAAA4" stroke-width="0.5">
+                                <svg-component is="line" x1="0" y1="0" x2="0" y2$="[[def.svg_height]]" stroke="#BCAAA4" stroke-width="0.1">
                                 </svg-component>
-                            </template>
-                            <svg-component is="line" x1="0" y1="0" x2="0" y2$="[[def.svg_height]]" stroke="#BCAAA4" stroke-width="0.1">
-                            </svg-component>
-                            <svg-component is="line" x1="100" y1="0" x2="100" y2$="[[def.svg_height]]" stroke="#BCAAA4" stroke-width="0.1">
-                            </svg-component>
-                        </svg-component>
-                        <svg-component is="g" id="scoreProfiles">
-                            <template is="dom-repeat" items="[[score_profiles]]" as="score">
-                                <svg-component is="polyline" points$="[[score.points_str]]" fill="none" stroke="#BCAAA4" stroke-width="2">
+                                <svg-component is="line" x1$="[[def.svg_width_100]]" y1="0" x2$="[[def.svg_width_100]]" y2$="[[def.svg_height]]" stroke="#BCAAA4" stroke-width="0.5">
                                 </svg-component>
-                            </template>
-                        </svg-component>
-                    </svg-container>
+                            </svg-component>
+                            <svg-component is="g" id="scoreProfiles" class="fade_in">
+                                <template is="dom-repeat" items="[[score_profiles]]" as="score">
+                                    <svg-component class="fade" is="polyline" points$="[[score.points_str]]" fill="none" stroke="#BCAAA4" stroke-width="4">
+                                    </svg-component>
+                                </template>
+                                <template is="dom-repeat" items="[[scales]]" as="scale">
+                                    <template is="dom-repeat" items="[[scale.scores]]" as="score">
+                                        <svg-component is="circle" r="5" cx$="[[score.value_x]]" cy$="[[score.value_y]]" fill="rgba(255, 255, 255, 0.5)" stroke="#BCAAA4" stroke-width="1">
+                                        </svg-component>
+                                    </template>
+                                </template>
+                            </svg-component>
+                        </svg-container>
+                    </template>
                 </div>
             </div>
             <!-- Skalenbeschriftung Links/Rechts -->
@@ -233,7 +303,7 @@ Profile Charts
                         <div class="beschriftung_element fade" style$="height:[[def.scale_item_height]]; width:[[def.scale_item_width]]" right>
                             <p class="beschriftung_element_title right">[[s.left_title]]
                             </p>
-                            <p class="beschriftung_element_subtitle right">[[s.left_text]]</p>
+                            <p class="beschriftung_element_subtitle fade_in right">[[s.left_text]]</p>
                         </div>
                     </template>
                 </div>
@@ -242,7 +312,7 @@ Profile Charts
                         <div class="beschriftung_element fade" style$="height:[[def.scale_item_height]]; max-height:[[def.scale_item_height]]; width:[[def.scale_item_width]]">
                             <p class="beschriftung_element_title">[[s.right_title]]
                             </p>
-                            <p class="beschriftung_element_subtitle">[[s.right_text]]</p>
+                            <p class="beschriftung_element_subtitle fade_in">[[s.right_text]]</p>
                         </div>
                     </template>
                 </div>
@@ -263,47 +333,6 @@ Profile Charts
                  scale_item_width=[[def.scale_item_width]] 
                  >600px: {{wide}} | 4800px: {{xs}}
             </pre>
-            <template is="dom-repeat" items="[[scores.data]]" as="score">
-                <div>
-                    [[score.all_found]] | GSI-Z: [[score.calculation.all_results.gsi_global_severity_index_z_score]]
-                </div>
-            </template>
-            <div class="layout horizontal flex">
-                <p class="flex-1">
-                    [[start.left_title]]<span class="caption"><br>[[start.left_text]]</span>
-                </p>
-                <div class="flex-6">
-                    Zahlen
-                </div>
-                <p class="flex-1">
-                    [[start.right_title]]<span class="caption"><br>[[start.right_text]]</span>
-                </p>
-            </div>
-            <template is="dom-repeat" id="menu" items="[[scales]]" as="s">
-                <div>
-                    <p>[[s.topline]] [[s.id]] | [[s.left_title]]<span class="caption"><br>[[s.left_text]]</span></p>
-                </div>
-            </template>
-            <div class="layout horizontal flex">
-                <p>
-                    [[start.left_title]]<span class="caption"><br>[[start.left_text]]</span>
-                </p>
-                <div class="flex-10">
-                    <svg-container id="SvgContainer" view-box$="0 0 100 [[def.svg_height]]" height$="[[def.svg_height]]">
-                        <svg-component is="g" id="baseGrid">
-                            <template is="dom-repeat" items="[[scales]]" as="scale">
-                                <svg-component is="line" x1="0" y1$="[[scale.topline]]" x2="100" y2$="[[scale.topline]]" stroke="#E0E0E0" stroke-width="1">
-                                </svg-component>
-                                <svg-component is="line" x1="0" y1$="[[scale.baseline]]" x2="100" y2$="[[scale.baseline]]" stroke="#FBE9E7" stroke-width="1">
-                                </svg-component>
-                            </template>
-                        </svg-component>
-                    </svg-container>
-                </div>
-                <p>
-                    [[start.right_title]]<span class="caption"><br>[[start.right_text]]</span>
-                </p>
-            </div>
         </div>
     </template>
     <script>
@@ -355,13 +384,13 @@ Profile Charts
         return d;
     };
 
-    __getXPos = function(min, max, current_value) {
+    __getXPos = function(min, max, svg_width_100, current_value) {
         var width_value = null
         if (current_value) {
             current_value = parseInt(current_value);
 
             var width_100 = Math.abs(min) + Math.abs(max);
-            width_value = (100 / width_100) * (current_value + Math.abs(min));
+            width_value = (svg_width_100 / width_100) * (current_value + Math.abs(min));
         };
         return width_value;
         console.log('__getXPos: ', current_value, width_100, width_value);
@@ -422,8 +451,6 @@ Profile Charts
             var scores = this.scores.data;
             var def = JSON.parse(JSON.stringify(this.options));
 
-            def.width = this.$.SvgContainer.offsetWidth;
-
 
             //def.is600 = false;
             def.svg_height = def.item_height * (scales.length);
@@ -431,7 +458,16 @@ Profile Charts
             def.scale_item_height = (def.item_height - 0) + 'px';
 
             def.scale_item = ((def.item_height - def.item_text_wide) * 4)
-            def.scale_item_width =  def.scale_item + 'px';
+            def.scale_item_width = def.scale_item + 'px';
+
+
+            def.svg_width_set = false;
+            def.svg_width = this.$.svg_grafic.offsetWidth;
+            if (def.svg_width !== 0) {
+                def.svg_width_set = true;
+                def.svg_width_100 = def.svg_width - (2 * def.scale_item) - 12;
+                console.log('SET!', this.def.svg_width, this.options);
+            };
 
 
             scales.forEach(function(scale, scaleID) {
@@ -497,12 +533,19 @@ Profile Charts
 
             var my_min = this.def.item_min;
             var my_max = this.def.item_max;
+
+            if (this.def.svg_width_100 === 0) {
+                var my_100 = 100;
+            } else {
+                var my_100 = this.def.svg_width_100;
+            };
+
             console.log('__setValueX: ', my_min, my_max);
 
             var scores_points = [];
             this.scales.forEach(function(scale, scaleID) {
                 scale.scores.forEach(function(score, scoreID) {
-                    score.value_x = __getXPos(my_min, my_max, score.value);
+                    score.value_x = __getXPos(my_min, my_max, my_100, score.value);
                     score.value_y = scale.baseline;
 
                     var score_obj = {
@@ -524,13 +567,6 @@ Profile Charts
             console.log('score_profiles', this.score_profiles);
         },
 
-        ready: function() {
-
-            this.__setInit();
-            this.__setCSS();
-            this.__setScoreProfiles();
-
-        },
 
         properties: {
             options: {
@@ -545,6 +581,20 @@ Profile Charts
             scores: {
                 type: Object
             },
+        },
+
+        attached: function() {
+            this.__setInit();
+            this.__setCSS();
+            this.__setScoreProfiles();
+
+        },
+
+        ready: function() {
+
+            this.__setInit();
+            console.log('READY: clientWidth', this.$.svg_grafic.clientWidth);
+
         },
 
     });
