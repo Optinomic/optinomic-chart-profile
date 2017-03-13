@@ -264,6 +264,12 @@ Profile Charts
                 <div class="svg_grafic_inner">
                     <template is="dom-if" if="{{def.svg_width_set}}">
                         <svg-container id="SvgContainer" view-box$="0 0 100 [[def.svg_height]]" width$="[[def.svg_width_100]]" height$="[[def.svg_height_style]]">
+                            <svg-component is="g" id="ranges" class="fade_in">
+                                <template is="dom-repeat" items="[[ranges]]" as="range">
+                                    <svg-component class="fade" is="rect" x$="[[range.x]]" y="0" fill$="[[range.rgb]]" width$="[[range.width]]" height$="[[range.height]]" stroke-width="none">
+                                    </svg-component>
+                                </template>
+                            </svg-component>
                             <svg-component is="g" id="baseGrid">
                                 <template is="dom-repeat" items="[[scales]]" as="scale">
                                     <svg-component is="line" x1="0" y1$="[[scale.bottomline]]" x2$="[[def.svg_width_100]]" y2$="[[scale.bottomline]]" stroke="#D7CCC8" stroke-width="0.5">
@@ -272,22 +278,31 @@ Profile Charts
                                         <svg-component is="line" x1="0" y1$="[[scale.topline]]" x2$="[[def.svg_width_100]]" y2$="[[scale.topline]]" stroke="#D7CCC8" stroke-width="0.5">
                                         </svg-component>
                                     </template>
-                                    <svg-component is="line" x1="0" y1$="[[scale.baseline]]" x2$="[[def.svg_width_100]]" y2$="[[scale.baseline]]" stroke="#BCAAA4" stroke-width="1">
+                                    <template is="dom-if" if="[[def.show_baseline]]">
+                                    <svg-component is="line" x1="0" y1$="[[scale.baseline]]" x2$="[[def.svg_width_100]]" y2$="[[scale.baseline]]" stroke$="[[def.color_grid]]" stroke-width="1">
                                     </svg-component>
+                                    </template>
+
                                 </template>
-                                <svg-component is="line" x1="0" y1="0" x2="0" y2$="[[def.svg_height]]" stroke="#BCAAA4" stroke-width="0.1">
-                                </svg-component>
-                                <svg-component is="line" x1$="[[def.svg_width_100]]" y1="0" x2$="[[def.svg_width_100]]" y2$="[[def.svg_height]]" stroke="#BCAAA4" stroke-width="0.5">
-                                </svg-component>
+                                <template is="dom-repeat" items="[[verticalGrid]]" as="grid">
+                                    <template is="dom-if" if="[[grid.zero]]">
+                                        <svg-component is="line" x1$="[[grid.x]]" y1="0" x2$="[[grid.x]]" y2$="[[grid.y]]" stroke$="[[def.color_grid]]" stroke-width="2">
+                                        </svg-component>
+                                    </template>
+                                    <template is="dom-if" if="[[!grid.zero]]">
+                                        <svg-component is="line" x1$="[[grid.x]]" y1="0" x2$="[[grid.x]]" y2$="[[grid.y]]" stroke$="[[def.color_grid]]" stroke-width="0.1">
+                                        </svg-component>
+                                    </template>
+                                </template>
                             </svg-component>
                             <svg-component is="g" id="scoreProfiles" class="fade_in">
                                 <template is="dom-repeat" items="[[score_profiles]]" as="score">
-                                    <svg-component class="fade" is="polyline" points$="[[score.points_str]]" fill="none" stroke="#BCAAA4" stroke-width="4">
+                                    <svg-component is="polyline" points$="[[score.points_str]]" fill="none" stroke$="[[score.color]]" stroke-width="4">
                                     </svg-component>
                                 </template>
                                 <template is="dom-repeat" items="[[scales]]" as="scale">
                                     <template is="dom-repeat" items="[[scale.scores]]" as="score">
-                                        <svg-component is="circle" r="5" cx$="[[score.value_x]]" cy$="[[score.value_y]]" fill="rgba(255, 255, 255, 0.5)" stroke="#BCAAA4" stroke-width="1">
+                                        <svg-component class="fade" is="circle" r="5" cx$="[[score.value_x]]" cy$="[[score.value_y]]" fill="rgba(255, 255, 255, 0.5)" stroke$="[[def.color_grid]]" stroke-width="1">
                                         </svg-component>
                                     </template>
                                 </template>
@@ -336,6 +351,43 @@ Profile Charts
         </div>
     </template>
     <script>
+
+    getColor = function(id) {
+        var colors = [];
+        colors.push("#3F51B5");
+        colors.push("#E91E63");
+        colors.push("#00BCD4");
+        colors.push("#8BC34A");
+        colors.push("#FFC107");
+        colors.push("#795548");
+
+        colors.push("#673AB7");
+        colors.push("#F44336");
+        colors.push("#03A9F4");
+        colors.push("#4CAF50");
+        colors.push("#FFEB3B");
+        colors.push("#FF5722");
+
+        colors.push("#2196F3");
+        colors.push("#9C27B0");
+        colors.push("#009688");
+        colors.push("#CDDC39");
+        colors.push("#FF9800");
+        colors.push("#607D8B");
+
+        var selected_id = id;
+
+        return colors[selected_id];
+    };
+
+    hexToRGB = function(hex, alpha) {
+        var h = "0123456789ABCDEF";
+        var r = h.indexOf(hex[1]) * 16 + h.indexOf(hex[2]);
+        var g = h.indexOf(hex[3]) * 16 + h.indexOf(hex[4]);
+        var b = h.indexOf(hex[5]) * 16 + h.indexOf(hex[6]);
+        if (alpha) return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
+        else return "rgb(" + r + ", " + g + ", " + b + ")";
+    };
     __autoMinMax = function(do_min, do_max, d, all_scales) {
         // Init
         if (do_min) {
@@ -366,18 +418,18 @@ Profile Charts
 
         if (do_min) {
             if (d.item_min < 0) {
-                d.item_min = Math.ceil(Math.abs(d.item_min));
+                d.item_min = Math.ceil(Math.abs(d.item_min)) + 1;
                 d.item_min = d.item_min * -1;
             } else {
-                d.item_min = Math.ceil(Math.abs(d.item_min));
+                d.item_min = Math.ceil(Math.abs(d.item_min)) + 1;
             };
         };
         if (do_max) {
             if (d.item_max < 0) {
-                d.item_max = Math.ceil(Math.abs(d.item_max));
+                d.item_max = Math.ceil(Math.abs(d.item_max)) + 1;
                 d.item_max = d.item_max * -1;
             } else {
-                d.item_max = Math.ceil(Math.abs(d.item_max));
+                d.item_max = Math.ceil(Math.abs(d.item_max)) + 1;
             };
         };
 
@@ -386,14 +438,13 @@ Profile Charts
 
     __getXPos = function(min, max, svg_width_100, current_value) {
         var width_value = null
-        if (current_value) {
-            current_value = parseInt(current_value);
+        if (current_value !== undefined) {
+            current_value = current_value;
 
             var width_100 = Math.abs(min) + Math.abs(max);
             width_value = (svg_width_100 / width_100) * (current_value + Math.abs(min));
         };
         return width_value;
-        console.log('__getXPos: ', current_value, width_100, width_value);
     };
 
 
@@ -413,7 +464,6 @@ Profile Charts
                 this.$.svg_grafic.style['margin-right'] = 0;
             };
         },
-
 
         __setInit: function() {
 
@@ -452,7 +502,10 @@ Profile Charts
             var def = JSON.parse(JSON.stringify(this.options));
 
 
-            //def.is600 = false;
+            def.only_one = true;
+            if (this.scales.length > 1) {
+                def.only_one = false;
+            };
             def.svg_height = def.item_height * (scales.length);
             def.svg_height_style = def.svg_height + 'px';
             def.scale_item_height = (def.item_height - 0) + 'px';
@@ -529,8 +582,6 @@ Profile Charts
         },
 
         __setScoreProfiles: function() {
-
-
             var my_min = this.def.item_min;
             var my_max = this.def.item_max;
 
@@ -540,7 +591,7 @@ Profile Charts
                 var my_100 = this.def.svg_width_100;
             };
 
-            console.log('__setValueX: ', my_min, my_max);
+            // console.log('__setValueX: ', my_min, my_max);
 
             var scores_points = [];
             this.scales.forEach(function(scale, scaleID) {
@@ -552,6 +603,7 @@ Profile Charts
                         "text": "Messung",
                         "points": [],
                         "points_str": "",
+                        "color": getColor(scoreID)
                     };
 
                     scores_points[scoreID] = scores_points[scoreID] === undefined ? score_obj : scores_points[scoreID];
@@ -565,6 +617,60 @@ Profile Charts
             this.score_profiles = scores_points;
 
             console.log('score_profiles', this.score_profiles);
+        },
+
+        __setVerticalGrid: function() {
+            var def = this.def;
+
+            vGrid = [];
+
+            for (i = def.item_min; i < def.item_max + 1; i++) {
+                var grid_object = {
+                    "x": __getXPos(def.item_min, def.item_max, def.svg_width_100, i),
+                    "y": def.svg_height,
+                    "zero": false
+                };
+
+                if (i === 0) {
+                    grid_object.zero = true;
+                };
+
+                vGrid.push(grid_object);
+            };
+
+            this.verticalGrid = vGrid;
+
+            console.log('__setVerticalGrid', this.verticalGrid);
+        },
+
+        __setRanges: function() {
+            var ranges = this.ranges;
+            var def = this.def;
+            var alpha = 0.5;
+
+
+            ranges.forEach(function(range, rangeID) {
+                range.id = rangeID;
+                range.rgb = hexToRGB(range.color, alpha);
+
+                range.start = range.range_start;
+                if (range.range_start === -999) {
+                    range.start = def.item_min;
+                } else {
+
+                };
+
+                range.stop = range.range_stop;
+                if (range.range_stop === 999) {
+                    range.stop = def.item_max;
+                };
+
+                range.width = (__getXPos(def.item_min, def.item_max, def.svg_width_100, range.stop)) - (__getXPos(def.item_min, def.item_max, def.svg_width_100, range.start));
+                range.x = __getXPos(def.item_min, def.item_max, def.svg_width_100, range.start);
+
+                range.height = def.svg_height;
+            });
+            console.log('__setRanges', this.ranges);
         },
 
 
@@ -581,18 +687,26 @@ Profile Charts
             scores: {
                 type: Object
             },
+            ranges: {
+                type: Object
+            },
         },
 
         attached: function() {
             this.__setInit();
             this.__setCSS();
             this.__setScoreProfiles();
+            this.__setVerticalGrid();
+            this.__setRanges();
+
 
         },
 
         ready: function() {
 
             this.__setInit();
+
+
             console.log('READY: clientWidth', this.$.svg_grafic.clientWidth);
 
         },
