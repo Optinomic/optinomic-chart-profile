@@ -1,0 +1,611 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../iron-media-query/iron-media-query.html">
+<!--
+`optinomic-chart-profile`
+Profile Charts
+
+@demo demo/index.html 
+-->
+<dom-module id="optinomic-chart-profile">
+    <template>
+        <style include="iron-flex iron-flex-alignment">
+        :host {
+            display: block;
+            --app-grid-columns: 3;
+            --app-grid-item-height: 100px;
+        }
+        
+        .container {
+            width: 100%;
+            display: block;
+        }
+        
+        html,
+        body {
+            font-family: 'Roboto', sans-serif !important;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            min-height: 100%;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .large {
+            font-size: 125%;
+        }
+        
+        .small {
+            font-size: 75%;
+        }
+        
+        a {
+            text-decoration: none;
+        }
+        
+        h1,
+        .display-1 {
+            font-size: 34.7px;
+            font-weight: 100;
+            line-height: 42px;
+            color: #757575;
+            font-family: 'Roboto', sans-serif !important;
+        }
+        
+        h2,
+        .headline {
+            font-size: 24.2px;
+            font-weight: 300;
+            line-height: 33.6px;
+            color: #616161;
+        }
+        
+        h3,
+        .title {
+            font-size: 20px;
+            font-weight: 300;
+            letter-spacing: 0.005em;
+            color: #424242;
+        }
+        
+        h4,
+        .subhead {
+            font-size: 15.8px;
+            font-weight: 300;
+            letter-spacing: 0.010em;
+            line-height: 25.2px;
+            color: #212121;
+        }
+        
+        p,
+        .body-1 {
+            font-size: 13.7px;
+            font-weight: 400;
+            letter-spacing: 0.010em;
+            line-height: 21px;
+            color: #212121;
+        }
+        
+        b,
+        .body-2 {
+            font-size: 13.7px;
+            font-weight: 500;
+            letter-spacing: 0.010em;
+            line-height: 25.2px;
+            color: #212121;
+        }
+        
+        .caption {
+            font-size: 10.6px;
+            letter-spacing: 0.020em;
+            line-height: 70% !important;
+            color: #757575;
+        }
+        
+        .grid-border-top {
+            border-top-color: #E0E0E0;
+            border-top-style: solid;
+            border-top-width: 1px;
+        }
+        
+        div.relative {
+            position: relative;
+            width: 100%;
+        }
+        
+        .svg_grafic {}
+        
+        .svg_grafic_inner {
+            margin-left: 6px;
+            margin-right: 6px;
+            background-color: #FFFFFF;
+        }
+        
+        div.absolute_left {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        div.absolute_right {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+        
+        div.absolute_full {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+        }
+        
+        div.beschriftung_element {
+            overflow: hidden !important;
+        }
+        
+        .beschriftung_element_title {
+            font-size: 12.6px;
+            letter-spacing: 0.020em;
+            line-height: 105% !important;
+        }
+        
+        .beschriftung_element_subtitle {
+            font-size: 10.6px;
+            letter-spacing: 0.020em;
+            line-height: 105% !important;
+            color: #757575;
+            margin-top: -10px;
+        }
+        
+        .fade {
+            opacity: 0.7;
+            transition: opacity .25s ease-in-out;
+            -moz-transition: opacity .25s ease-in-out;
+            -webkit-transition: opacity .25s ease-in-out;
+        }
+        
+        .fade:hover {
+            opacity: 1;
+        }
+        
+        .start_container {
+            margin-bottom: 24px;
+        }
+        
+        .right {
+            text-align: right;
+        }
+        
+        .left {
+            text-align: left;
+        }
+        </style>
+        <!-- START - Grafik -->
+        <div class="start_container">
+            <div class="layout horizontal flex">
+                <p class="flex" style$="width:[[def.scale_item_width]]">
+                    [[start.left_title]]<span class="caption"><br>[[start.left_text]]</span>
+                </p>
+                <p class="flex right" style$="width:[[def.scale_item_width]]">
+                    [[start.right_title]]<span class="caption"><br>[[start.right_text]]</span>
+                </p>
+            </div>
+        </div>
+        <!-- CONTENT - Grafik -->
+        <div class="relative" style$="height:[[def.svg_height_style]]">
+            <!-- SVG - Grafik -->
+            <div id="svg_grafic" class="svg_grafic">
+                <div class="svg_grafic_inner">
+                    <svg-container id="SvgContainer" view-box$="0 0 100 [[def.svg_height]]" width="798" height$="[[def.svg_height_style]]">
+                        <svg-component is="g" id="baseGrid">
+                            <template is="dom-repeat" items="[[scales]]" as="scale">
+                                <svg-component is="line" x1="0" y1$="[[scale.bottomline]]" x2="100" y2$="[[scale.bottomline]]" stroke="#D7CCC8" stroke-width="0.5">
+                                </svg-component>
+                                <template is="dom-if" if="[[scale.first]]">
+                                    <svg-component is="line" x1="0" y1$="[[scale.topline]]" x2="100" y2$="[[scale.topline]]" stroke="#D7CCC8" stroke-width="0.5">
+                                    </svg-component>
+                                </template>
+                                <svg-component is="line" x1="0" y1$="[[scale.baseline]]" x2="100" y2$="[[scale.baseline]]" stroke="#BCAAA4" stroke-width="0.5">
+                                </svg-component>
+                            </template>
+                            <svg-component is="line" x1="0" y1="0" x2="0" y2$="[[def.svg_height]]" stroke="#BCAAA4" stroke-width="0.1">
+                            </svg-component>
+                            <svg-component is="line" x1="100" y1="0" x2="100" y2$="[[def.svg_height]]" stroke="#BCAAA4" stroke-width="0.1">
+                            </svg-component>
+                        </svg-component>
+                        <svg-component is="g" id="scoreProfiles">
+                            <template is="dom-repeat" items="[[score_profiles]]" as="score">
+                                <svg-component is="polyline" points$="[[score.points_str]]" fill="none" stroke="#BCAAA4" stroke-width="2">
+                                </svg-component>
+                            </template>
+                        </svg-component>
+                    </svg-container>
+                </div>
+            </div>
+            <!-- Skalenbeschriftung Links/Rechts -->
+            <template is="dom-if" if="{{wide}}">
+                <div class="absolute_left" style$="height:[[def.svg_height_style]]; width:[[def.scale_item_width]]">
+                    <template is="dom-repeat" id="right_beschriftung" items="[[scales]]" as="s">
+                        <div class="beschriftung_element fade" style$="height:[[def.scale_item_height]]; width:[[def.scale_item_width]]" right>
+                            <p class="beschriftung_element_title right">[[s.left_title]]
+                            </p>
+                            <p class="beschriftung_element_subtitle right">[[s.left_text]]</p>
+                        </div>
+                    </template>
+                </div>
+                <div class="absolute_right" style$="height:[[def.svg_height_style]]; width:[[def.scale_item_width]]">
+                    <template is="dom-repeat" id="left_beschriftung" items="[[scales]]" as="s">
+                        <div class="beschriftung_element fade" style$="height:[[def.scale_item_height]]; max-height:[[def.scale_item_height]]; width:[[def.scale_item_width]]">
+                            <p class="beschriftung_element_title">[[s.right_title]]
+                            </p>
+                            <p class="beschriftung_element_subtitle">[[s.right_text]]</p>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+        <!-- Media Query -->
+        <iron-media-query query="(min-width: 580px)" query-matches="{{wide}}" on-query-matches-changed="__setCSS"></iron-media-query>
+        <!-- SPACE -->
+        <div style="margin-top: 150px;">
+            &nbsp;
+        </div>
+        <hr>
+        <!-- DEBUG -->
+        <div>
+            <pre>
+                 svg_height_style=[[def.svg_height_style]] 
+                 scale_item_height=[[def.scale_item_height]] 
+                 scale_item_width=[[def.scale_item_width]] 
+                 >600px: {{wide}} | 4800px: {{xs}}
+            </pre>
+            <template is="dom-repeat" items="[[scores.data]]" as="score">
+                <div>
+                    [[score.all_found]] | GSI-Z: [[score.calculation.all_results.gsi_global_severity_index_z_score]]
+                </div>
+            </template>
+            <div class="layout horizontal flex">
+                <p class="flex-1">
+                    [[start.left_title]]<span class="caption"><br>[[start.left_text]]</span>
+                </p>
+                <div class="flex-6">
+                    Zahlen
+                </div>
+                <p class="flex-1">
+                    [[start.right_title]]<span class="caption"><br>[[start.right_text]]</span>
+                </p>
+            </div>
+            <template is="dom-repeat" id="menu" items="[[scales]]" as="s">
+                <div>
+                    <p>[[s.topline]] [[s.id]] | [[s.left_title]]<span class="caption"><br>[[s.left_text]]</span></p>
+                </div>
+            </template>
+            <div class="layout horizontal flex">
+                <p>
+                    [[start.left_title]]<span class="caption"><br>[[start.left_text]]</span>
+                </p>
+                <div class="flex-10">
+                    <svg-container id="SvgContainer" view-box$="0 0 100 [[def.svg_height]]" height$="[[def.svg_height]]">
+                        <svg-component is="g" id="baseGrid">
+                            <template is="dom-repeat" items="[[scales]]" as="scale">
+                                <svg-component is="line" x1="0" y1$="[[scale.topline]]" x2="100" y2$="[[scale.topline]]" stroke="#E0E0E0" stroke-width="1">
+                                </svg-component>
+                                <svg-component is="line" x1="0" y1$="[[scale.baseline]]" x2="100" y2$="[[scale.baseline]]" stroke="#FBE9E7" stroke-width="1">
+                                </svg-component>
+                            </template>
+                        </svg-component>
+                    </svg-container>
+                </div>
+                <p>
+                    [[start.right_title]]<span class="caption"><br>[[start.right_text]]</span>
+                </p>
+            </div>
+        </div>
+    </template>
+    <script>
+    __autoMinMax = function(do_min, do_max, d, all_scales) {
+        // Init
+        if (do_min) {
+            d.item_min = 0;
+        };
+        if (do_max) {
+            d.item_max = 0;
+        };
+
+        // Check in scales/scores
+        all_scales.forEach(function(scale, scaleID) {
+            scale.scores.forEach(function(score, scoreID) {
+                if (do_min) {
+                    if (score.value < d.item_min) {
+                        d.item_min = score.value;
+                    };
+                };
+                if (do_max) {
+                    if (score.value > d.item_max) {
+                        d.item_max = score.value;
+                    };
+                };
+            });
+        });
+
+
+        //Round a number upward to its nearest integer:
+
+        if (do_min) {
+            if (d.item_min < 0) {
+                d.item_min = Math.ceil(Math.abs(d.item_min));
+                d.item_min = d.item_min * -1;
+            } else {
+                d.item_min = Math.ceil(Math.abs(d.item_min));
+            };
+        };
+        if (do_max) {
+            if (d.item_max < 0) {
+                d.item_max = Math.ceil(Math.abs(d.item_max));
+                d.item_max = d.item_max * -1;
+            } else {
+                d.item_max = Math.ceil(Math.abs(d.item_max));
+            };
+        };
+
+        return d;
+    };
+
+    __getXPos = function(min, max, current_value) {
+        var width_value = null
+        if (current_value) {
+            current_value = parseInt(current_value);
+
+            var width_100 = Math.abs(min) + Math.abs(max);
+            width_value = (100 / width_100) * (current_value + Math.abs(min));
+        };
+        return width_value;
+        console.log('__getXPos: ', current_value, width_100, width_value);
+    };
+
+
+    Polymer({
+
+        is: 'optinomic-chart-profile',
+
+
+        __setCSS: function() {
+            console.log('setCSS:', this.wide);
+
+            if (this.wide === true) {
+                this.$.svg_grafic.style['margin-left'] = this.def.scale_item_width;
+                this.$.svg_grafic.style['margin-right'] = this.def.scale_item_width;
+            } else {
+                this.$.svg_grafic.style['margin-left'] = 0;
+                this.$.svg_grafic.style['margin-right'] = 0;
+            };
+        },
+
+
+        __setInit: function() {
+
+            __getScorePath = function(current_score, path) {
+                var dots_count = (path.split(".").length - 1)
+
+                var dive = [];
+                for (i = 0; i < dots_count; i++) {
+                    var n = path.indexOf(".");
+                    var item = path.substring(0, n);
+                    path = path.substring(n + 1, path.length);
+                    dive.push(item);
+                    if (i === dots_count - 1) {
+                        dive.push(path);
+                    };
+                };
+
+                var return_value = null;
+                var data_dive = JSON.parse(JSON.stringify(current_score));
+
+                // console.log('__getScorePath', data_dive, path);
+
+                for (i = 0; i < dive.length; i++) {
+                    data_dive = data_dive[dive[i]];
+                    if (i === dots_count) {
+                        return_value = data_dive;
+
+                        return return_value;
+                    };
+                };
+            };
+
+
+            var scales = this.scales;
+            var scores = this.scores.data;
+            var def = JSON.parse(JSON.stringify(this.options));
+
+            def.width = this.$.SvgContainer.offsetWidth;
+
+
+            //def.is600 = false;
+            def.svg_height = def.item_height * (scales.length);
+            def.svg_height_style = def.svg_height + 'px';
+            def.scale_item_height = (def.item_height - 0) + 'px';
+
+            def.scale_item = ((def.item_height - def.item_text_wide) * 4)
+            def.scale_item_width =  def.scale_item + 'px';
+
+
+            scales.forEach(function(scale, scaleID) {
+                scale.id = scaleID;
+                scale.topline = scaleID * def.item_height;
+                scale.baseline = scale.topline + (def.item_height / 2);
+                scale.bottomline = scale.topline + def.item_height;
+
+                scale.first = false;
+                if (scaleID === 0) {
+                    scale.first = true;
+                };
+
+                scale.last = false;
+                if (scaleID === scales.length - 1) {
+                    scale.last = true;
+                };
+
+                scale.scores = [];
+                scores.forEach(function(score, scoreID) {
+                    var score_obj = {
+                        "value": null
+                    };
+
+                    if (scale.score_path) {
+                        score_obj.value = this.__getScorePath(score, scale.score_path);
+                    };
+
+                    scale.scores.push(score_obj);
+                });
+            });
+
+            console.log('(!) Definition:', def);
+
+            this.def = def;
+            this.scales = scales;
+
+
+            // Auto Min/Max
+            var do_min = false;
+            if ((def.min === 'auto') || (def.min === undefined)) {
+                do_min = true;
+            } else {
+                item_min = parseInt(def.min);
+            };
+
+            var do_max = false;
+            if ((def.max === 'auto') || (def.max === undefined)) {
+                do_max = true;
+            } else {
+                item_max = parseInt(def.max);
+            };
+
+            if (do_max || do_min) {
+                __autoMinMax(do_min, do_max, this.def, this.scales);
+            };
+
+            console.log('(!) Scales:', this.scales);
+        },
+
+        __setScoreProfiles: function() {
+
+
+            var my_min = this.def.item_min;
+            var my_max = this.def.item_max;
+            console.log('__setValueX: ', my_min, my_max);
+
+            var scores_points = [];
+            this.scales.forEach(function(scale, scaleID) {
+                scale.scores.forEach(function(score, scoreID) {
+                    score.value_x = __getXPos(my_min, my_max, score.value);
+                    score.value_y = scale.baseline;
+
+                    var score_obj = {
+                        "text": "Messung",
+                        "points": [],
+                        "points_str": "",
+                    };
+
+                    scores_points[scoreID] = scores_points[scoreID] === undefined ? score_obj : scores_points[scoreID];
+
+                    scores_points[scoreID].points.push(score.value_x + ',' + score.value_y);
+                    scores_points[scoreID].points_str = scores_points[scoreID].points_str + score.value_x + ',' + score.value_y + ' ';
+                    // <polyline points="20,30 40,25 60,40 80,120 120,140 200,180" style="fill:none;stroke:black;stroke-width:3" />
+                });
+            });
+
+            this.score_profiles = scores_points;
+
+            console.log('score_profiles', this.score_profiles);
+        },
+
+        ready: function() {
+
+            this.__setInit();
+            this.__setCSS();
+            this.__setScoreProfiles();
+
+        },
+
+        properties: {
+            options: {
+                type: Object
+            },
+            start: {
+                type: Object
+            },
+            scales: {
+                type: Object
+            },
+            scores: {
+                type: Object
+            },
+        },
+
+    });
+    </script>
+</dom-module>
+<!-- 
+http://plnkr.co/edit/pegYFTcr9koAZEg7pTMf?p=preview
+-->
+<dom-module id="svg-container">
+    <template>
+        <svg id="svg" version="1.1" xmlns="http://www.w3.org/2000/svg" width="100%" preserveAspectRatio="xMinYMin meet"></svg>
+        <content select="svg-component"></content>
+    </template>
+    <script>
+    Polymer({
+        is: 'svg-container',
+
+        attached: function() {
+            for (var i = 0; i < this.attributes.length; i++) {
+                this.$.svg.setAttribute(Polymer.CaseMap.dashToCamelCase(this.attributes[i].name), this.attributes[i].value);
+            }
+        }
+    });
+    </script>
+</dom-module>
+<dom-module id="svg-component">
+    <template>
+        <content select="svg-component"></content>
+    </template>
+    <script>
+    SvgComponent = Polymer({
+        is: 'svg-component',
+
+        _node: {},
+
+        _namespace: 'http://www.w3.org/2000/svg',
+
+        get rootElement() {
+            if (this.parentNode.nodeName === 'SVG-CONTAINER')
+                return this.parentNode.$.svg;
+            else
+                return this.parentNode._node;
+        },
+
+        factoryImpl: function(attributes) {
+            for (var key in attributes)
+                this.setAttribute(key, attributes[key]);
+        },
+
+        attached: function() {
+            var is = this.attributes.is.value;
+
+            if (is !== undefined) {
+                this._node = document.createElementNS(this._namespace, is);
+                for (var i = 0; i < this.attributes.length; i++) {
+                    if (this.attributes[i].name !== 'is')
+                        this._node.setAttribute(this.attributes[i].name, this.attributes[i].value);
+                }
+                this.rootElement.appendChild(this._node);
+            }
+        }
+    });
+    </script>
+</dom-module>
