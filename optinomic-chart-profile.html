@@ -2,6 +2,7 @@
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../iron-media-query/iron-media-query.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <!--
 `optinomic-chart-profile`
@@ -33,6 +34,18 @@ Profile Charts
             -ms-text-size-adjust: 100%;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+        }
+        
+        paper-icon-button {
+            color: var(--paper-grey-400);
+            --paper-icon-button-ink-color: var(--paper-indigo-a200);
+            transition: all .2s ease-in-out;
+            transform: scale(0.5);
+        }
+        
+        paper-icon-button:hover {
+            color: var(--paper-indigo-500);
+            transform: scale(1.0);
         }
         
         .large {
@@ -146,6 +159,8 @@ Profile Charts
         
         div.beschriftung_element {
             overflow: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
         
         .beschriftung_element_title {
@@ -163,7 +178,7 @@ Profile Charts
         }
         
         .fade {
-            opacity: 0.7;
+            opacity: 0.75;
             transition: opacity .25s ease-in-out;
             -moz-transition: opacity .25s ease-in-out;
             -webkit-transition: opacity .25s ease-in-out;
@@ -279,10 +294,9 @@ Profile Charts
                                         </svg-component>
                                     </template>
                                     <template is="dom-if" if="[[def.show_baseline]]">
-                                    <svg-component is="line" x1="0" y1$="[[scale.baseline]]" x2$="[[def.svg_width_100]]" y2$="[[scale.baseline]]" stroke$="[[def.color_grid]]" stroke-width="1">
-                                    </svg-component>
+                                        <svg-component is="line" x1="0" y1$="[[scale.baseline]]" x2$="[[def.svg_width_100]]" y2$="[[scale.baseline]]" stroke$="[[def.color_grid]]" stroke-width="1">
+                                        </svg-component>
                                     </template>
-
                                 </template>
                                 <template is="dom-repeat" items="[[verticalGrid]]" as="grid">
                                     <template is="dom-if" if="[[grid.zero]]">
@@ -295,16 +309,16 @@ Profile Charts
                                     </template>
                                 </template>
                             </svg-component>
-                            <svg-component is="g" id="scoreProfiles" class="fade_in">
+                            <svg-component is="g" id="scoreProfiles">
                                 <template is="dom-repeat" items="[[score_profiles]]" as="score">
-                                    <svg-component is="polyline" points$="[[score.points_str]]" fill="none" stroke$="[[score.color]]" stroke-width="4">
-                                    </svg-component>
-                                </template>
-                                <template is="dom-repeat" items="[[scales]]" as="scale">
-                                    <template is="dom-repeat" items="[[scale.scores]]" as="score">
-                                        <svg-component class="fade" is="circle" r="5" cx$="[[score.value_x]]" cy$="[[score.value_y]]" fill="rgba(255, 255, 255, 0.5)" stroke$="[[def.color_grid]]" stroke-width="1">
+                                    <svg-component is="g" id="scoreProfile" class="fade">
+                                        <svg-component is="polyline" points$="[[score.points_str]]" fill="none" stroke$="[[score.color]]" stroke-width="4">
                                         </svg-component>
-                                    </template>
+                                        <template is="dom-repeat" items="[[score.points]]" as="point">
+                                            <svg-component is="circle" r="6" cx$="[[point.x]]" cy$="[[point.y]]" fill$="[[point.fill]]" stroke$="[[point.stroke]]" stroke-width="2">
+                                            </svg-component>
+                                        </template>
+                                    </svg-component>
                                 </template>
                             </svg-component>
                         </svg-container>
@@ -315,19 +329,25 @@ Profile Charts
             <template is="dom-if" if="{{wide}}">
                 <div class="absolute_left" style$="height:[[def.svg_height_style]]; width:[[def.scale_item_width]]">
                     <template is="dom-repeat" id="right_beschriftung" items="[[scales]]" as="s">
-                        <div class="beschriftung_element fade" style$="height:[[def.scale_item_height]]; width:[[def.scale_item_width]]" right>
-                            <p class="beschriftung_element_title right">[[s.left_title]]
-                            </p>
-                            <p class="beschriftung_element_subtitle fade_in right">[[s.left_text]]</p>
+                        <div class="beschriftung_element fade horizontal layout" style$="height:[[def.scale_item_height]]; width:[[def.scale_item_width]]" right>
+                            <div class="flex self-center">
+                                <div class="layout horizontal flex">
+                                    <p class="beschriftung_element_title flex right">[[s.left_title]]</p>
+                                    <paper-icon-button icon="info-outline"></paper-icon-button>
+                                </div>
+                            </div>
                         </div>
                     </template>
                 </div>
                 <div class="absolute_right" style$="height:[[def.svg_height_style]]; width:[[def.scale_item_width]]">
                     <template is="dom-repeat" id="left_beschriftung" items="[[scales]]" as="s">
-                        <div class="beschriftung_element fade" style$="height:[[def.scale_item_height]]; max-height:[[def.scale_item_height]]; width:[[def.scale_item_width]]">
-                            <p class="beschriftung_element_title">[[s.right_title]]
-                            </p>
-                            <p class="beschriftung_element_subtitle fade_in">[[s.right_text]]</p>
+                        <div class="beschriftung_element fade horizontal layout" style$="height:[[def.scale_item_height]]; max-height:[[def.scale_item_height]]; width:[[def.scale_item_width]]">
+                            <div class="flex self-center">
+                                <div class="layout horizontal flex">
+                                    <paper-icon-button icon="info-outline"></paper-icon-button>
+                                    <p class="beschriftung_element_title flex">[[s.right_title]]</p>
+                                </div>
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -351,7 +371,6 @@ Profile Charts
         </div>
     </template>
     <script>
-
     getColor = function(id) {
         var colors = [];
         colors.push("#3F51B5");
@@ -454,7 +473,7 @@ Profile Charts
 
 
         __setCSS: function() {
-            console.log('setCSS:', this.wide);
+            //console.log('setCSS:', this.wide);
 
             if (this.wide === true) {
                 this.$.svg_grafic.style['margin-left'] = this.def.scale_item_width;
@@ -584,6 +603,8 @@ Profile Charts
         __setScoreProfiles: function() {
             var my_min = this.def.item_min;
             var my_max = this.def.item_max;
+            var ranges = this.ranges;
+
 
             if (this.def.svg_width_100 === 0) {
                 var my_100 = 100;
@@ -596,19 +617,38 @@ Profile Charts
             var scores_points = [];
             this.scales.forEach(function(scale, scaleID) {
                 scale.scores.forEach(function(score, scoreID) {
+
                     score.value_x = __getXPos(my_min, my_max, my_100, score.value);
                     score.value_y = scale.baseline;
+
+                    var my_color = getColor(scoreID);
 
                     var score_obj = {
                         "text": "Messung",
                         "points": [],
                         "points_str": "",
-                        "color": getColor(scoreID)
+                        "color": my_color
+                    };
+
+                    var points_obj = {
+                        "x": score.value_x,
+                        "y": score.value_y,
+                        "stroke": my_color,
+                        "fill": "white"
+                    };
+
+                    if (ranges.length > 0) {
+                        ranges.forEach(function(range, rangeID) {
+
+                            if (score.value_x >= range.start_pos && score.value_x <= range.stop_pos) {
+                                points_obj.fill = range.color;
+                            }
+
+                        });
                     };
 
                     scores_points[scoreID] = scores_points[scoreID] === undefined ? score_obj : scores_points[scoreID];
-
-                    scores_points[scoreID].points.push(score.value_x + ',' + score.value_y);
+                    scores_points[scoreID].points.push(points_obj);
                     scores_points[scoreID].points_str = scores_points[scoreID].points_str + score.value_x + ',' + score.value_y + ' ';
                     // <polyline points="20,30 40,25 60,40 80,120 120,140 200,180" style="fill:none;stroke:black;stroke-width:3" />
                 });
@@ -646,31 +686,35 @@ Profile Charts
         __setRanges: function() {
             var ranges = this.ranges;
             var def = this.def;
-            var alpha = 0.5;
+            var alpha = this.def.range_alpha;
 
+            if (ranges.length > 0) {
+                ranges.forEach(function(range, rangeID) {
+                    range.id = rangeID;
+                    range.rgb = hexToRGB(range.color, alpha);
 
-            ranges.forEach(function(range, rangeID) {
-                range.id = rangeID;
-                range.rgb = hexToRGB(range.color, alpha);
+                    range.start = range.range_start;
+                    if (range.range_start === -999) {
+                        range.start = def.item_min;
+                    } else {
 
-                range.start = range.range_start;
-                if (range.range_start === -999) {
-                    range.start = def.item_min;
-                } else {
+                    };
 
-                };
+                    range.stop = range.range_stop;
+                    if (range.range_stop === 999) {
+                        range.stop = def.item_max;
+                    };
 
-                range.stop = range.range_stop;
-                if (range.range_stop === 999) {
-                    range.stop = def.item_max;
-                };
+                    range.start_pos = __getXPos(def.item_min, def.item_max, def.svg_width_100, range.start);
+                    range.stop_pos = __getXPos(def.item_min, def.item_max, def.svg_width_100, range.stop);
 
-                range.width = (__getXPos(def.item_min, def.item_max, def.svg_width_100, range.stop)) - (__getXPos(def.item_min, def.item_max, def.svg_width_100, range.start));
-                range.x = __getXPos(def.item_min, def.item_max, def.svg_width_100, range.start);
+                    range.width = range.stop_pos - range.start_pos;
+                    range.x = __getXPos(def.item_min, def.item_max, def.svg_width_100, range.start);
 
-                range.height = def.svg_height;
-            });
-            console.log('__setRanges', this.ranges);
+                    range.height = def.svg_height;
+                });
+                console.log('__setRanges', this.ranges);
+            };
         },
 
 
@@ -695,9 +739,10 @@ Profile Charts
         attached: function() {
             this.__setInit();
             this.__setCSS();
-            this.__setScoreProfiles();
-            this.__setVerticalGrid();
             this.__setRanges();
+            this.__setVerticalGrid();
+            this.__setScoreProfiles();
+
 
 
         },
