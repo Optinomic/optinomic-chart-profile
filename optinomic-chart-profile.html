@@ -1,9 +1,10 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../iron-media-query/iron-media-query.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <!--
 `optinomic-chart-profile`
 Profile Charts
@@ -39,13 +40,10 @@ Profile Charts
         paper-icon-button {
             color: var(--paper-grey-400);
             --paper-icon-button-ink-color: var(--paper-indigo-a200);
-            transition: all .2s ease-in-out;
-            transform: scale(0.5);
         }
         
         paper-icon-button:hover {
             color: var(--paper-indigo-500);
-            transform: scale(1.0);
         }
         
         .large {
@@ -54,6 +52,15 @@ Profile Charts
         
         .small {
             font-size: 75%;
+        }
+        
+        .zoom {
+            transition: all .2s ease-in-out;
+            transform: scale(1.0);
+        }
+        
+        .zoom:hover {
+            transform: scale(1.3);
         }
         
         a {
@@ -132,10 +139,13 @@ Profile Charts
         
         .svg_grafic {}
         
+        .svg_grafic_top {
+            margin-top: -500px;
+        }
+        
         .svg_grafic_inner {
             margin-left: 6px;
             margin-right: 6px;
-            background-color: #FFFFFF;
         }
         
         div.absolute_left {
@@ -161,20 +171,6 @@ Profile Charts
             overflow: hidden !important;
             margin: 0 !important;
             padding: 0 !important;
-        }
-        
-        .beschriftung_element_title {
-            font-size: 12.6px;
-            letter-spacing: 0.020em;
-            line-height: 105% !important;
-        }
-        
-        .beschriftung_element_subtitle {
-            font-size: 10.6px;
-            letter-spacing: 0.020em;
-            line-height: 105% !important;
-            color: #757575;
-            margin-top: -10px;
         }
         
         .fade {
@@ -260,6 +256,22 @@ Profile Charts
         .left {
             text-align: left;
         }
+        
+        paper-checkbox {
+            --paper-checkbox-label-color: #9E9E9E;
+            --paper-checkbox-checked-color: #9E9E9E;
+            --paper-checkbox-unchecked-color: #757575;
+            --paper-checkbox-vertical-align: top;
+            align-self: center;
+            padding: 8px 16px;
+        }
+        
+        paper-checkbox .subtitle {
+            display: block;
+            font-size: 0.8em;
+            margin-top: 2px;
+            max-width: 150px;
+        }
         </style>
         <!-- START - Grafik -->
         <div class="start_container">
@@ -281,7 +293,7 @@ Profile Charts
                         <svg-container id="SvgContainer" view-box$="0 0 100 [[def.svg_height]]" width$="[[def.svg_width_100]]" height$="[[def.svg_height_style]]">
                             <svg-component is="g" id="ranges" class="fade_in">
                                 <template is="dom-repeat" items="[[ranges]]" as="range">
-                                    <svg-component class="fade" is="rect" x$="[[range.x]]" y="0" fill$="[[range.rgb]]" width$="[[range.width]]" height$="[[range.height]]" stroke-width="none">
+                                    <svg-component class="fade_in" is="rect" x$="[[range.x]]" y="0" fill$="[[range.rgb]]" width$="[[range.width]]" height$="[[range.height]]" stroke-width="none">
                                     </svg-component>
                                 </template>
                             </svg-component>
@@ -307,18 +319,6 @@ Profile Charts
                                         <svg-component is="line" x1$="[[grid.x]]" y1="0" x2$="[[grid.x]]" y2$="[[grid.y]]" stroke$="[[def.color_grid]]" stroke-width="0.1">
                                         </svg-component>
                                     </template>
-                                </template>
-                            </svg-component>
-                            <svg-component is="g" id="scoreProfiles">
-                                <template is="dom-repeat" items="[[score_profiles]]" as="score">
-                                    <svg-component is="g" id="scoreProfile" class="fade">
-                                        <svg-component is="polyline" points$="[[score.points_str]]" fill="none" stroke$="[[score.color]]" stroke-width="4">
-                                        </svg-component>
-                                        <template is="dom-repeat" items="[[score.points]]" as="point">
-                                            <svg-component is="circle" r="6" cx$="[[point.x]]" cy$="[[point.y]]" fill$="[[point.fill]]" stroke$="[[point.stroke]]" stroke-width="2">
-                                            </svg-component>
-                                        </template>
-                                    </svg-component>
                                 </template>
                             </svg-component>
                         </svg-container>
@@ -353,6 +353,44 @@ Profile Charts
                 </div>
             </template>
         </div>
+        <!-- SVG - Profile / Messungen -->
+        <div class="relative" style$="height:[[def.svg_height_style]]">
+            <template is="dom-if" if="{{def.svg_width_set}}">
+                <template is="dom-repeat" items="{{score_profiles}}" as="score">
+                    <template is="dom-if" if="{{score.show}}">
+                        <!-- SVG - Grafik -->
+                        <div class="fade_in" style$="margin-top: -[[def.svg_height_style]]; margin-left:[[def.svg_left]]">
+                            <div class="svg_grafic_inner">
+                                <svg-container id="SvgContainer" view-box$="0 0 100 [[def.svg_height]]" width$="[[def.svg_width_100]]" height$="[[def.svg_height_style]]">
+                                    <svg-component is="g" id="scoreProfiles">
+                                        <svg-component is="g" id="scoreProfile" class="fade">
+                                            <svg-component is="polyline" points$="[[score.points_str]]" fill="none" stroke$="[[score.color]]" stroke-width="4">
+                                            </svg-component>
+                                            <template is="dom-repeat" items="[[score.points]]" as="point">
+                                                <svg-component class="zoom" is="circle" r="6" cx$="[[point.x]]" cy$="[[point.y]]" fill$="[[point.fill]]" stroke$="[[point.stroke]]" stroke-width="2">
+                                                </svg-component>
+                                            </template>
+                                        </svg-component>
+                                    </svg-component>
+                                </svg-container>
+                            </div>
+                        </div>
+                    </template>
+                    <template is="dom-if" if="{{score.show}}">
+                        <div style$="margin-top: -[[def.svg_height_style]]; margin-left:[[def.svg_left]]; margin-right:[[def.svg_right]]">
+                        </div>
+                    </template>
+                </template>
+            </template>
+        </div>
+        <div style="margin-top: 24px;">
+            <template is="dom-repeat" items="{{score_profiles}}" as="score">
+                <paper-checkbox checked="{{score.show}}">
+                    <span style$="color:[[score.color]]">[[score.title]]</span>
+                    <span style$="color:[[score.color]]" class="subtitle">[[score.date]]</span>
+                </paper-checkbox>
+            </template>
+        </div>
         <!-- Media Query -->
         <iron-media-query query="(min-width: 580px)" query-matches="{{wide}}" on-query-matches-changed="__setCSS"></iron-media-query>
         <!-- SPACE -->
@@ -363,6 +401,8 @@ Profile Charts
         <!-- DEBUG -->
         <div>
             <pre>
+                 Checkbox= {{checkbox}}
+                 def.svg_width_set: {{def.svg_width_set}}
                  svg_height_style=[[def.svg_height_style]] 
                  scale_item_height=[[def.scale_item_height]] 
                  scale_item_width=[[def.scale_item_width]] 
@@ -466,6 +506,21 @@ Profile Charts
         return width_value;
     };
 
+    formatDateCH = function(date_string) {
+        if (date_string !== undefined) {
+
+            // 1952-11-19T00:00:00.000000000000Z
+            var year = parseInt(date_string.substring(0, 4));
+            var month = parseInt(date_string.substring(5, 7));
+            var day = parseInt(date_string.substring(8, 10));
+            var date_string_return = day + "." + month + "." + year
+
+            return date_string_return;
+        } else {
+            return null;
+        }
+    };
+
 
     Polymer({
 
@@ -475,12 +530,35 @@ Profile Charts
         __setCSS: function() {
             //console.log('setCSS:', this.wide);
 
+
+            if (this.def) {
+                this.def.svg_left = '0px';
+                this.def.svg_right = '0px';
+            };
+
+
+
             if (this.wide === true) {
                 this.$.svg_grafic.style['margin-left'] = this.def.scale_item_width;
                 this.$.svg_grafic.style['margin-right'] = this.def.scale_item_width;
+
+                if (this.def) {
+                    this.def.svg_left = this.def.scale_item_width;
+                    this.def.svg_right = this.def.scale_item_width;
+                };
+
+                //this.$.score_layer_1.style['margin-left'] = this.def.scale_item_width;
+
+                //this.$['score_layer_1'].style['margin-left'] = this.def.scale_item_width;
+                //console.log('CSS::::', this.$$('#' + 'score_layer_1'));
+                //console.log('CSS::::', this.$['score_layer_1'].style);
+                //console.log('CSS::::', this.$.score_layer_1.style);
+
+
             } else {
                 this.$.svg_grafic.style['margin-left'] = 0;
                 this.$.svg_grafic.style['margin-right'] = 0;
+
             };
         },
 
@@ -568,6 +646,14 @@ Profile Charts
                         score_obj.value = this.__getScorePath(score, scale.score_path);
                     };
 
+                    if (def.response_date_path) {
+                        score_obj.date = this.__getScorePath(score, def.response_date_path);
+                    };
+
+                    if (def.response_mz_path) {
+                        score_obj.mz = this.__getScorePath(score, def.response_mz_path);
+                    };
+
                     scale.scores.push(score_obj);
                 });
             });
@@ -624,10 +710,14 @@ Profile Charts
                     var my_color = getColor(scoreID);
 
                     var score_obj = {
-                        "text": "Messung",
+                        "id": scoreID,
+                        "dom_id": "score_layer_" + scoreID,
+                        "title": score.mz,
+                        "date": formatDateCH(score.date),
                         "points": [],
                         "points_str": "",
-                        "color": my_color
+                        "color": my_color,
+                        "show": true
                     };
 
                     var points_obj = {
@@ -650,11 +740,14 @@ Profile Charts
                     scores_points[scoreID] = scores_points[scoreID] === undefined ? score_obj : scores_points[scoreID];
                     scores_points[scoreID].points.push(points_obj);
                     scores_points[scoreID].points_str = scores_points[scoreID].points_str + score.value_x + ',' + score.value_y + ' ';
-                    // <polyline points="20,30 40,25 60,40 80,120 120,140 200,180" style="fill:none;stroke:black;stroke-width:3" />
                 });
             });
 
+
             this.score_profiles = scores_points;
+            this.score_profiles_display = JSON.parse(JSON.stringify(scores_points));
+
+            //this.notifySplices('score_profiles', scores_points);
 
             console.log('score_profiles', this.score_profiles);
         },
@@ -734,17 +827,18 @@ Profile Charts
             ranges: {
                 type: Object
             },
+            checkbox: {
+                type: Boolean,
+                value: true,
+            },
         },
 
         attached: function() {
             this.__setInit();
-            this.__setCSS();
             this.__setRanges();
             this.__setVerticalGrid();
             this.__setScoreProfiles();
-
-
-
+            this.__setCSS();
         },
 
         ready: function() {
@@ -808,6 +902,7 @@ http://plnkr.co/edit/pegYFTcr9koAZEg7pTMf?p=preview
 
             if (is !== undefined) {
                 this._node = document.createElementNS(this._namespace, is);
+
                 for (var i = 0; i < this.attributes.length; i++) {
                     if (this.attributes[i].name !== 'is')
                         this._node.setAttribute(this.attributes[i].name, this.attributes[i].value);

@@ -15,26 +15,25 @@
 </head>
 
 <body>
-        <h3>Basic optinomic-chart-profile demo</h3>
-        <demo-snippet>
-            <template>
-                <optinomic-chart-profile 
-                options='{
+    <h3>Basic optinomic-chart-profile demo</h3>
+    <demo-snippet>
+        <template>
+            <optinomic-chart-profile options='{
                   "min": "auto",
                   "max": "auto",
                   "item_height": 50,
                   "item_text_wide": 15,
                   "color_grid": "#9E9E9E",
-                  "show_baseline": true,
-                  "range_alpha": 0.1
-                }' 
-                start='{
+                  "show_baseline": false,
+                  "range_alpha": 0.1,
+                  "response_date_path": "calculation.info.filled",
+                  "response_mz_path":   "calculation.info.mz.mz_typ"
+                }' start='{
                   "left_title": "Geringe Ausprägung",
                   "left_text": "Eine längere Beschreibung bzgl. der geringen Ausprägung.",
                   "right_title": "Starke Ausprägung",
                   "right_text": "Eine längere Beschreibung bzgl. der starken Ausprägung."
-                }' 
-                scales='[{
+                }' scales='[{
                     "id": 0,
                     "left_title": "GSI (Global Severity Index)",
                     "left_text": "GSI (Global Severity Index)",
@@ -134,9 +133,7 @@
                     "sd_norm": [0.31, 0.33],
                     "score_path": "calculation.all_results.somatisierung_z_score",
                     "items": 7
-                }]'
-
-                ranges= '[{
+                }]' ranges='[{
   "range_start": -999,
   "range_stop": -1.5,
   "color": "#F44336"
@@ -148,10 +145,7 @@
   "range_start": 4,
   "range_stop": 999,
   "color": "#F44336"
-}]'
-
-
-                scores='{
+}]' scores='{
   "date": "2017-03-11T12:37:27.011Z",
   "data": [
     {
@@ -1783,10 +1777,9 @@
   ],
   "request": "stay"
 }'>
-                  
-                </optinomic-chart-profile>
-            </template>
-        </demo-snippet>
+            </optinomic-chart-profile>
+        </template>
+    </demo-snippet>
 </body>
 
 </html>
