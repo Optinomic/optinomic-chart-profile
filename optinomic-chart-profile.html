@@ -110,6 +110,13 @@ Profile Charts
             color: #212121;
         }
         
+        .beschriftung_element_title {
+            font-size: 12.5px;
+            font-weight: 400;
+            letter-spacing: 0.005em;
+            color: #212121;
+        }
+        
         b,
         .body-2 {
             font-size: 13.7px;
@@ -325,6 +332,36 @@ Profile Charts
                     </template>
                 </div>
             </div>
+        </div>
+        <!-- SVG - Profile / Messungen -->
+        <div class="relative" style$="height:[[def.svg_height_style]]">
+            <template is="dom-if" if="{{def.svg_width_set}}">
+                <template is="dom-repeat" items="{{score_profiles}}" as="score">
+                    <template is="dom-if" if="{{score.show}}">
+                        <!-- SVG - Grafik -->
+                        <div class="fade_in" style$="margin-top: -[[def.svg_height_style]]; margin-left:[[def.svg_left]]">
+                            <div class="svg_grafic_inner">
+                                <svg-container id="SvgContainer" view-box$="0 0 100 [[def.svg_height]]" width$="[[def.svg_width_100]]" height$="[[def.svg_height_style]]">
+                                    <svg-component is="g" id="scoreProfiles">
+                                        <svg-component is="g" id="scoreProfile" class="fade">
+                                            <svg-component is="polyline" points$="[[score.points_str]]" fill="none" stroke$="[[score.color]]" stroke-width="4">
+                                            </svg-component>
+                                            <template is="dom-repeat" items="[[score.points]]" as="point">
+                                                <svg-component is="circle" r="6" cx$="[[point.x]]" cy$="[[point.y]]" fill$="[[point.fill]]" stroke$="[[point.stroke]]" stroke-width="2">
+                                                </svg-component>
+                                            </template>
+                                        </svg-component>
+                                    </svg-component>
+                                </svg-container>
+                            </div>
+                        </div>
+                    </template>
+                    <template is="dom-if" if="{{score.show}}">
+                        <div style$="margin-top: -[[def.svg_height_style]]; margin-left:[[def.svg_left]]; margin-right:[[def.svg_right]]">
+                        </div>
+                    </template>
+                </template>
+            </template>
             <!-- Skalenbeschriftung Links/Rechts -->
             <template is="dom-if" if="{{wide}}">
                 <div class="absolute_left" style$="height:[[def.svg_height_style]]; width:[[def.scale_item_width]]">
@@ -351,36 +388,6 @@ Profile Charts
                         </div>
                     </template>
                 </div>
-            </template>
-        </div>
-        <!-- SVG - Profile / Messungen -->
-        <div class="relative" style$="height:[[def.svg_height_style]]">
-            <template is="dom-if" if="{{def.svg_width_set}}">
-                <template is="dom-repeat" items="{{score_profiles}}" as="score">
-                    <template is="dom-if" if="{{score.show}}">
-                        <!-- SVG - Grafik -->
-                        <div class="fade_in" style$="margin-top: -[[def.svg_height_style]]; margin-left:[[def.svg_left]]">
-                            <div class="svg_grafic_inner">
-                                <svg-container id="SvgContainer" view-box$="0 0 100 [[def.svg_height]]" width$="[[def.svg_width_100]]" height$="[[def.svg_height_style]]">
-                                    <svg-component is="g" id="scoreProfiles">
-                                        <svg-component is="g" id="scoreProfile" class="fade">
-                                            <svg-component is="polyline" points$="[[score.points_str]]" fill="none" stroke$="[[score.color]]" stroke-width="4">
-                                            </svg-component>
-                                            <template is="dom-repeat" items="[[score.points]]" as="point">
-                                                <svg-component class="zoom" is="circle" r="6" cx$="[[point.x]]" cy$="[[point.y]]" fill$="[[point.fill]]" stroke$="[[point.stroke]]" stroke-width="2">
-                                                </svg-component>
-                                            </template>
-                                        </svg-component>
-                                    </svg-component>
-                                </svg-container>
-                            </div>
-                        </div>
-                    </template>
-                    <template is="dom-if" if="{{score.show}}">
-                        <div style$="margin-top: -[[def.svg_height_style]]; margin-left:[[def.svg_left]]; margin-right:[[def.svg_right]]">
-                        </div>
-                    </template>
-                </template>
             </template>
         </div>
         <div style="margin-top: 24px;">
@@ -711,7 +718,6 @@ Profile Charts
 
                     var score_obj = {
                         "id": scoreID,
-                        "dom_id": "score_layer_" + scoreID,
                         "title": score.mz,
                         "date": formatDateCH(score.date),
                         "points": [],
@@ -721,6 +727,7 @@ Profile Charts
                     };
 
                     var points_obj = {
+                        "value": score.value,
                         "x": score.value_x,
                         "y": score.value_y,
                         "stroke": my_color,
@@ -743,11 +750,7 @@ Profile Charts
                 });
             });
 
-
             this.score_profiles = scores_points;
-            this.score_profiles_display = JSON.parse(JSON.stringify(scores_points));
-
-            //this.notifySplices('score_profiles', scores_points);
 
             console.log('score_profiles', this.score_profiles);
         },
