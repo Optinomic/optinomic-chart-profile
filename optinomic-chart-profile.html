@@ -37,13 +37,17 @@ Profile Charts
             -moz-osx-font-smoothing: grayscale;
         }
         
-        paper-icon-button {
+        paper-icon-button.info {
             color: var(--paper-grey-400);
             --paper-icon-button-ink-color: var(--paper-indigo-a200);
+            transition: all .2s ease-in-out;
+            transform: scale(0.5);
+            margin-top: 3px;
         }
         
-        paper-icon-button:hover {
+        paper-icon-button.info:hover {
             color: var(--paper-indigo-500);
+            transform: scale(1.0);
         }
         
         .large {
@@ -283,17 +287,21 @@ Profile Charts
         <!-- START - Grafik -->
         <div class="start_container">
             <div class="layout horizontal flex">
-                <p class="flex" style$="width:[[def.scale_item_width]]">
-                    [[start.left_title]]<span class="caption"><br>[[start.left_text]]</span>
-                </p>
-                <p class="flex right" style$="width:[[def.scale_item_width]]">
-                    [[start.right_title]]<span class="caption"><br>[[start.right_text]]</span>
-                </p>
+                <div class="flex" style$="width:[[def.scale_item_width]]">
+                    <p>
+                        [[start.left_title]]<span class="caption"><br>[[start.left_text]]</span>
+                    </p>
+                </div>
+                <div class="flex right" style$="width:[[def.scale_item_width]]">
+                    <p>
+                        [[start.right_title]]<span class="caption"><br>[[start.right_text]]</span>
+                    </p>
+                </div>
             </div>
         </div>
         <!-- CONTENT - Grafik -->
         <div class="relative" style$="height:[[def.svg_height_style]]">
-            <!-- SVG - Grafik -->
+            <!-- SVG - Grid -->
             <div id="svg_grafic" class="svg_grafic">
                 <div class="svg_grafic_inner">
                     <template is="dom-if" if="{{def.svg_width_set}}">
@@ -332,10 +340,8 @@ Profile Charts
                     </template>
                 </div>
             </div>
-        </div>
-        <!-- SVG - Profile / Messungen -->
-        <div class="relative" style$="height:[[def.svg_height_style]]">
-            <template is="dom-if" if="{{def.svg_width_set}}">
+            <!-- SVG - Profile | Einzeln-->
+            <template is="dom-if" if="{{!def.all_profiles}}">
                 <template is="dom-repeat" items="{{score_profiles}}" as="score">
                     <template is="dom-if" if="{{score.show}}">
                         <!-- SVG - Grafik -->
@@ -343,11 +349,11 @@ Profile Charts
                             <div class="svg_grafic_inner">
                                 <svg-container id="SvgContainer" view-box$="0 0 100 [[def.svg_height]]" width$="[[def.svg_width_100]]" height$="[[def.svg_height_style]]">
                                     <svg-component is="g" id="scoreProfiles">
-                                        <svg-component is="g" id="scoreProfile" class="fade">
+                                        <svg-component is="g" id="scoreProfile">
                                             <svg-component is="polyline" points$="[[score.points_str]]" fill="none" stroke$="[[score.color]]" stroke-width="4">
                                             </svg-component>
                                             <template is="dom-repeat" items="[[score.points]]" as="point">
-                                                <svg-component is="circle" r="6" cx$="[[point.x]]" cy$="[[point.y]]" fill$="[[point.fill]]" stroke$="[[point.stroke]]" stroke-width="2">
+                                                <svg-component is="circle" r="4" cx$="[[point.x]]" cy$="[[point.y]]" fill$="[[point.fill]]" stroke$="[[point.stroke]]" stroke-width="2">
                                                 </svg-component>
                                             </template>
                                         </svg-component>
@@ -356,10 +362,32 @@ Profile Charts
                             </div>
                         </div>
                     </template>
-                    <template is="dom-if" if="{{score.show}}">
-                        <div style$="margin-top: -[[def.svg_height_style]]; margin-left:[[def.svg_left]]; margin-right:[[def.svg_right]]">
+                </template>
+            </template>
+            <!-- SVG - Profile | Alle -->
+            <template is="dom-if" if="{{def.all_profiles}}">
+                <template is="dom-if" if="{{def.svg_width_set}}">
+                    <div class="fade_in" style$="margin-top: -[[def.svg_height_style]]; margin-left:[[def.svg_left]]">
+                        <div class="svg_grafic_inner">
+                            <svg-container id="SvgContainer" view-box$="0 0 100 [[def.svg_height]]" width$="[[def.svg_width_100]]" height$="[[def.svg_height_style]]">
+                                <svg-component is="g" id="scoreProfiles">
+                                    <template is="dom-repeat" items="{{score_profiles}}" as="score">
+                                        <template is="dom-if" if="{{score.show}}">
+                                            <!-- SVG - Grafik -->
+                                            <svg-component is="g" id="scoreProfile" class="fade">
+                                                <svg-component is="polyline" points$="[[score.points_str]]" fill="none" stroke$="[[score.color]]" stroke-width="4">
+                                                </svg-component>
+                                                <template is="dom-repeat" items="[[score.points]]" as="point">
+                                                    <svg-component is="circle" r="4" cx$="[[point.x]]" cy$="[[point.y]]" fill$="[[point.fill]]" stroke$="[[point.stroke]]" stroke-width="2" onmouseover="evt.target.setAttribute('r', '12');" onmouseout="evt.target.setAttribute('r','4');">
+                                                    </svg-component>
+                                                </template>
+                                            </svg-component>
+                                        </template>
+                                    </template>
+                                </svg-component>
+                            </svg-container>
                         </div>
-                    </template>
+                    </div>
                 </template>
             </template>
             <!-- Skalenbeschriftung Links/Rechts -->
@@ -370,7 +398,7 @@ Profile Charts
                             <div class="flex self-center">
                                 <div class="layout horizontal flex">
                                     <p class="beschriftung_element_title flex right">[[s.left_title]]</p>
-                                    <paper-icon-button icon="info-outline"></paper-icon-button>
+                                    <paper-icon-button class="info" icon="info-outline"></paper-icon-button>
                                 </div>
                             </div>
                         </div>
@@ -380,8 +408,8 @@ Profile Charts
                     <template is="dom-repeat" id="left_beschriftung" items="[[scales]]" as="s">
                         <div class="beschriftung_element fade horizontal layout" style$="height:[[def.scale_item_height]]; max-height:[[def.scale_item_height]]; width:[[def.scale_item_width]]">
                             <div class="flex self-center">
-                                <div class="layout horizontal flex">
-                                    <paper-icon-button icon="info-outline"></paper-icon-button>
+                                <div class="layout horizontal flex self-center">
+                                    <paper-icon-button class="info" icon="info-outline"></paper-icon-button>
                                     <p class="beschriftung_element_title flex">[[s.right_title]]</p>
                                 </div>
                             </div>
@@ -390,12 +418,27 @@ Profile Charts
                 </div>
             </template>
         </div>
+        <!-- Toggles -->
         <div style="margin-top: 24px;">
-            <template is="dom-repeat" items="{{score_profiles}}" as="score">
-                <paper-checkbox checked="{{score.show}}">
-                    <span style$="color:[[score.color]]">[[score.title]]</span>
-                    <span style$="color:[[score.color]]" class="subtitle">[[score.date]]</span>
-                </paper-checkbox>
+            <paper-checkbox checked="{{def.all_profiles}}">
+                <span>Alle</span>
+                <span class="subtitle">Alle Profile</span>
+            </paper-checkbox>
+            <template is="dom-if" if="{{!def.all_profiles}}">
+                <template is="dom-repeat" items="{{score_profiles}}" as="score">
+                    <paper-checkbox checked="{{score.show}}">
+                        <span style$="color:[[score.color]]">[[score.title]]</span>
+                        <span style$="color:[[score.color]]" class="subtitle">[[score.date]]</span>
+                    </paper-checkbox>
+                </template>
+            </template>
+            <template is="dom-if" if="{{def.all_profiles}}">
+                <template is="dom-repeat" items="{{score_profiles}}" as="score">
+                    <div>
+                        <span style$="color:[[score.color]]">[[score.title]]</span>
+                        <span style$="color:[[score.color]]" class="subtitle">[[score.date]]</span>
+                    </div>
+                </template>
             </template>
         </div>
         <!-- Media Query -->
