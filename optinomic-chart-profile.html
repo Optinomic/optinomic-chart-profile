@@ -773,6 +773,8 @@ Profile Charts
             } else {
                 d.item_min = Math.ceil(Math.abs(d.item_min)) + 1;
             };
+        } else {
+            d.item_min = d.min;
         };
         if (do_max) {
             if (d.item_max < 0) {
@@ -781,6 +783,8 @@ Profile Charts
             } else {
                 d.item_max = Math.ceil(Math.abs(d.item_max)) + 1;
             };
+        } else {
+            d.item_max = d.max;
         };
 
         return d;
