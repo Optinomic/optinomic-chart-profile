@@ -5,8 +5,32 @@
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <!--
-`optinomic-chart-profile`
-Profile Charts
+`optinomic-chart-profile` creates awesome Chart-Profiles. Designed for Optionmic-Apps.
+
+## Porperties - Descrpiton
+### Options
+
+#### Example
+
+```JS
+var chart_options = {
+    "min": -4,
+    "max": "auto",
+    "item_height": 50,
+    "item_text_width": 120,
+    "color_grid": "#9E9E9E",
+    "show_baseline": false,
+    "range_alpha": 0.1,
+    "vertical_grid_every_x": 1,
+    "response_title_path": "calculation.info.mz.mz_typ",
+    "response_date_path": "calculation.info.filled",
+    "all_profiles": true
+};
+```
+
+#### Details
+__min & max:__  "auto" will find the min/max automatically for you. You can also hardcode the min or max by setting it as a number.
+
 
 @demo demo/index.html 
 -->
@@ -289,12 +313,6 @@ Profile Charts
                     </svg-component>
                 </svg-container>
             </div>
-        </div>
-        <!-- DEBUG -->
-        <div>
-            <template is="dom-repeat" items="{{verticalGrid}}" as="g">
-                <p>[[g.value]]</p>
-            </template>
         </div>
     </template>
     <script>
