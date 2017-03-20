@@ -4,10 +4,11 @@
 <link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../optinomic-clinic-sample-selector/optinomic-clinic-sample-selector.html">
 <!--
 `optinomic-chart-profile` creates awesome Chart-Profiles. Designed for Optionmic-Apps.
 
-## Porperties - Descrpiton
+## Porperties - Descripiton
 ### Options
 
 #### Example
@@ -29,7 +30,10 @@ var chart_options = {
 ```
 
 #### Details
-__min & max:__  "auto" will find the min/max automatically for you. You can also hardcode the min or max by setting it as a number.
+| Property  |  Description  |
+|:---:|---|
+| __min__ | "auto" will find the min/max automatically for you. You can also hardcode the min or max by setting it as a number. |
+| __max__ | "auto" will find the min/max automatically for you. You can also hardcode the min or max by setting it as a number. |
 
 
 @demo demo/index.html 
@@ -107,6 +111,14 @@ __min & max:__  "auto" will find the min/max automatically for you. You can also
             font-weight: 400;
             letter-spacing: 0.005em;
             color: #212121;
+        }
+        
+        .description_item_text {
+            font-size: 10.5px;
+            font-weight: 400;
+            letter-spacing: 0.005em;
+            color: #757575;
+            margin-top: -12px;
         }
         
         .caption {
@@ -261,7 +273,12 @@ __min & max:__  "auto" will find the min/max automatically for you. You can also
                         <div class="description_item fade_in horizontal layout">
                             <div class="flex self-center">
                                 <div class="layout horizontal flex">
-                                    <p class="description_item_title flex right">[[s.left_title]]</p>
+                                    <div class="flex">
+                                        <p class="description_item_title  right">[[s.left_title]]</p>
+                                        <template is="dom-if" if="[[d.show_scale_text]]">
+                                            <p class="description_item_text  right">[[s.left_text]]</p>
+                                        </template>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -272,7 +289,12 @@ __min & max:__  "auto" will find the min/max automatically for you. You can also
                         <div class="description_item fade_in horizontal layout">
                             <div class="flex self-center">
                                 <div class="layout horizontal flex self-center">
-                                    <p class="description_item_title flex">[[s.right_title]]</p>
+                                    <div class="flex">
+                                        <p class="description_item_title">[[s.right_title]]</p>
+                                        <template is="dom-if" if="[[d.show_scale_text]]">
+                                            <p class="description_item_text">[[s.right_text]]</p>
+                                        </template>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -314,6 +336,23 @@ __min & max:__  "auto" will find the min/max automatically for you. You can also
                 </svg-container>
             </div>
         </div>
+        <!-- Clinic-Sample-Wrapper -->
+        <pre>
+          [[clinic_sample_data.item_text_width]]
+        </pre>
+        <optinomic-clinic-sample-selector data_dive="{{clinic_sample_dive}}" clinic_sample="[[clinic_samples]]" data_dive_path="statistics" return_data="{{clinic_sample_data}}" horizontal></optinomic-clinic-sample-selector>
+        <!-- Clinic-Sample-Wrapper -->
+        <template is="dom-repeat" items="[[clinic_sample_dive]]" as="s">
+            <p>:: {{s}}</p>
+        </template>
+        <template is="dom-repeat" items="[[clinic_sample_dive_notify]]" as="s">
+            <p>n :: {{s}}</p>
+        </template>
+        <div style="margin-top: 48px; background-color: silver">
+            <p>
+                return_data :: {{clinic_sample_data.n}} | {{clinic_sample_data.mean_1sd_min}} | {{clinic_sample_data.mean_1sd_plus}}
+            </p>
+        </div>
     </template>
     <script>
     Polymer({
@@ -330,10 +369,22 @@ __min & max:__  "auto" will find the min/max automatically for you. You can also
             // Scores @ Properties
             this.scores = this.scores === undefined ? {} : this.scores;
 
+            // clinic_samples @ Properties
+            this.clinic_samples = this.clinic_samples === undefined ? {} : this.clinic_samples;
+            this.clinic_sample_data = this.clinic_sample_data === undefined ? {} : this.clinic_sample_data;
+
+            var init_dive_path = [4, 1, 1];
+            this.clinic_sample_dive = this.clinic_sample_dive === undefined ? init_dive_path : this.clinic_sample_dive;
+
+            console.log('this.clinic_sample_dive', this.clinic_sample_dive);
+
+
             // Options @ Properties
             var d = this.options === undefined ? {} : this.options;
             d.color_grid = d.color_grid === undefined ? "#795548" : d.color_grid;
             d.show_baseline = d.show_baseline === undefined ? false : d.show_baseline;
+            d.show_scale_text = d.show_scale_text === undefined ? false : d.show_scale_text;
+
             d.item_height = d.item_height === undefined ? 50 : d.item_height;
             d.item_text_width = d.item_text_width === undefined ? 120 : d.item_text_width;
             d.response_title_path = d.response_title_path === undefined ? null : d.response_title_path;
@@ -692,6 +743,17 @@ __min & max:__  "auto" will find the min/max automatically for you. You can also
             },
             ranges: {
                 type: Object
+            },
+            clinic_samples: {
+                type: Object
+            },
+            clinic_sample_dive: {
+                type: Array,
+                notify: true
+            },
+            clinic_sample_data: {
+                type: Object,
+                notify: true
             },
             _d: {
                 type: Object
