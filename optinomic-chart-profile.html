@@ -54,7 +54,8 @@ var options = {
             display: block;
             --grafic-width: 480px;
             --grafic-height: 50px;
-            --grafic-margin: 0px;
+            --grafic-margin-left: 0px;
+            --grafic-margin-right: 0px;
             --grafic-top-space: 0px;
             --grafic-text-visibility: hidden;
             --item-height: 50px;
@@ -70,7 +71,7 @@ var options = {
             position: absolute;
             top: var(--grafic-top-space);
             left: 0;
-            width: var(--grafic-margin);
+            width: var(--grafic-margin-left);
             height: var(--grafic-height);
             text-align: right;
         }
@@ -87,7 +88,7 @@ var options = {
             position: absolute;
             top: var(--grafic-top-space);
             right: 0;
-            width: var(--grafic-margin);
+            width: var(--grafic-margin-right);
             height: var(--grafic-height);
             visibility: var(--grafic-text-visibility);
             text-align: left;
@@ -96,14 +97,14 @@ var options = {
         div.absolute_center {
             position: absolute;
             top: 0;
-            left: var(--grafic-margin);
+            left: var(--grafic-margin-left);
             width: var(--grafic-size);
             height: var(--grafic-height);
         }
         
         div.center {
-            margin-left: var(--grafic-margin);
-            margin-right: var(--grafic-margin);
+            margin-left: var(--grafic-margin-left);
+            margin-right: var(--grafic-margin-right);
             width: var(--grafic-size);
         }
         
@@ -162,8 +163,8 @@ var options = {
         }
         
         .config_page {
-            padding-top: 24px;
-            padding-bottom: 48px;
+            padding-top: 12px;
+            padding-bottom: 24px;
             min-height: 140px;
             border-bottom-color: var(--paper-grey-100);
             border-bottom-style: solid;
@@ -499,7 +500,7 @@ var options = {
                             </div>
                         </template>
                         <div class="item" style="border: 1px solid black;">
-                            <optinomic-clinic-sample-selector on-clinic-sample-changed="__csChanged" data_dive="[[clinic_sample_dive]]" clinic_sample="[[clinic_samples]]" data_dive_path="statistics" return_data="{{clinic_sample_data}}" horizontal></optinomic-clinic-sample-selector>
+                            <optinomic-clinic-sample-selector on-clinic-sample-changed="__csChanged" data_dive="[[clinic_sample_dive]]" clinic_sample="[[clinic_samples]]" data_dive_path="statistics" return_data="{{clinic_sample_data}}"></optinomic-clinic-sample-selector>
                         </div>
                     </g-r-i-d>
                 </div>
@@ -605,7 +606,8 @@ var options = {
             d.show_scale_text = d.show_scale_text === undefined ? false : d.show_scale_text;
 
             d.item_height = d.item_height === undefined ? 50 : d.item_height;
-            d.item_text_width = d.item_text_width === undefined ? 120 : d.item_text_width;
+            d.item_text_left = d.item_text_left === undefined ? 120 : d.item_text_left;
+            d.item_text_right = d.item_text_right === undefined ? 120 : d.item_text_right;
             d.response_title_path = d.response_title_path === undefined ? null : d.response_title_path;
             d.response_date_path = d.response_date_path === undefined ? null : d.response_date_path;
             d.min = d.min === undefined ? "auto" : d.min;
@@ -621,7 +623,8 @@ var options = {
             // Grafic Size
             d.grafic_top_space = 20;
             d.grafic_width = d.grafic_width === undefined ? 480 : d.grafic_width;
-            d.grafic_margin = d.item_text_width;
+            d.grafic_margin_left = d.item_text_left;
+            d.grafic_margin_right = d.item_text_right;
             d.grafic_text_visibility = 'hidden';
             d.grafic_height = d.item_height * (this.scales.length) + d.grafic_top_space + 1;
 
@@ -1109,15 +1112,17 @@ var options = {
             //this.set('d.grafic_width', 480);
 
             if (d.wide) {
-                this.set('d.grafic_width', full_width - (2 * this.d.grafic_margin));
+                this.set('d.grafic_width', full_width - (this.d.grafic_margin_left + this.d.grafic_margin_right));
                 this.set('d.grafic_text_visibility', 'visible');
 
-                this.customStyle['--grafic-margin'] = this.d.grafic_margin + 'px';
+                this.customStyle['--grafic-margin-left'] = this.d.grafic_margin_left + 'px';
+                this.customStyle['--grafic-margin-right'] = this.d.grafic_margin_right + 'px';
             } else {
                 this.set('d.grafic_width', full_width);
                 this.set('d.grafic_text_visibility', 'hidden');
 
-                this.customStyle['--grafic-margin'] = '0px';
+                this.customStyle['--grafic-margin-left'] = '0px';
+                this.customStyle['--grafic-margin-right'] = '0px';
             };
 
             // Apply
