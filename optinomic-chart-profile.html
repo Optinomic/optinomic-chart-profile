@@ -421,7 +421,7 @@ var options = {
                         <svg-container id="svg_container_profiles" view-box$="0 0 100 [[d.grafic_height]]" width="[[d.grafic_wight]]px" height$="[[d.grafic_height]]px">
                             <!-- SVG - Grafik -->
                             <svg-component is="g" id="csProfile" class="fade">
-                                <svg-component is="polygon" points$="[[cs.points_str]]" fill$="[[cs.color]]" stroke-width="0">
+                                <svg-component is="polygon" points$="[[cs.points_str]]" fill$="[[cs.color_profile]]" stroke-width="0">
                                 </svg-component>
                                 <svg-component is="polyline" points$="[[cs.points_str_min]]" fill="none" stroke$="[[cs.color_line]]" stroke-width="1">
                                 </svg-component>
@@ -474,7 +474,7 @@ var options = {
                     <!-- Toggle Messungen -->
                     <g-r-i-d min-column-width="250" gutter="4" row-height="" shown="{{animate_grid_0}}">
                         <template is="dom-repeat" items="{{_score_profiles}}" as="score">
-                            <div class="item" style$="border: 1px solid {{score.color}};">
+                            <div class="item" style$="border: 1px solid {{score.color}}; background-color: {{score.color_rgb}};">
                                 <paper-checkbox checked="{{score.show}}" class="styled">
                                     <span style$="color: {{score.color}};">
                                     {{score.title}}
@@ -491,9 +491,9 @@ var options = {
                     <!-- Clinic-Sample-Wrapper -->
                     <g-r-i-d id="grid_clinic_sample" min-column-width="250" gutter="4" row-height="" shown="{{animate_grid_1}}">
                         <template is="dom-repeat" items="{{_clinic_sample_profiles}}" as="cs">
-                            <div class="item" style$="border: 1px solid {{cs.color_line}};">
+                            <div class="item" style$="border: 1px solid {{cs.color}}; background-color: {{cs.color_bg}};">
                                 <paper-checkbox checked="{{cs.show}}" class="styled">
-                                    <span style$="color: {{cs.color_line}};">
+                                    <span style$="color: {{cs.color}};">
                                     {{cs.name}}
                                 </span>
                                 </paper-checkbox>
@@ -506,9 +506,9 @@ var options = {
                 </div>
                 <div class="config_page fade_in">
                     <!-- Ranges -->
-                    <g-r-i-d min-column-width="250" gutter="4" row-height="" shown="{{animate_grid_2}}">
+                    <g-r-i-d min-column-width="400" gutter="4" row-height="" shown="{{animate_grid_2}}">
                         <template is="dom-repeat" items="{{ranges}}" as="range">
-                            <div class="item" style$="border: 1px solid {{range.color}};">
+                            <div class="item" style$="border: 1px solid {{range.color}}; background-color: {{range.color_bg}};">
                                 <paper-checkbox checked="{{range.show}}" class="styled">
                                     <span style$="color: {{range.color}};">
                                         {{range.text}}
@@ -618,7 +618,8 @@ var options = {
 
             // Resize
             d.wide = false;
-            d.wide_breakpoint = 480;
+            d.wide_breakpoint = d.wide_breakpoint === undefined ? 520 : d.wide_breakpoint;
+
 
             // Grafic Size
             d.grafic_top_space = 20;
@@ -804,6 +805,7 @@ var options = {
             if (ranges.length > 0) {
                 ranges.forEach(function(range, rangeID) {
                     range.id = rangeID;
+                    range.color_bg = hexToRGB(range.color, 0.1);
                     range.rgb = hexToRGB(range.color, d.range_alpha);
                     range.show = range.show === undefined ? true : range.show;
 
@@ -881,7 +883,7 @@ var options = {
                         "points_str": "",
                         "color": my_color,
                         "color_line": hexToRGB(my_color, 0.8),
-                        "color_rgb": hexToRGB(my_color, d.range_alpha),
+                        "color_rgb": hexToRGB(my_color, 0.1),
                         "show": true
                     };
 
@@ -957,11 +959,16 @@ var options = {
 
             clone_clinic_sample_profiles.forEach(function(cs, csID) {
                 cs.show = false;
+                // var my_color = getColor(csID);
+                // cs.color = my_color;
+                // cs.color_bg = hexToRGB(my_color, 0.1);
+                // cs.color_profile = hexToRGB(my_color, 0.3);
+                // cs.color_line = hexToRGB(my_color, 0.8);
             });
 
 
             scales.forEach(function(scale, scaleID) {
-                var data = clinic_sample_data[scale.clinic_sample_path];
+                var data = clinic_sample_data[scale.clinic_sample_var];
                 scale.clinic_sample_min = data['mean_1sd_min'];
                 scale.clinic_sample_max = data['mean_1sd_plus'];
                 scale.clinic_sample_mean = data['mean'];
@@ -1065,7 +1072,9 @@ var options = {
             var cs_profile = {
                 "name": clinic_sample_name,
                 "show": true,
-                "color": hexToRGB(d.color_clinic_sample, 0.3),
+                "color": d.color_clinic_sample,
+                "color_bg": hexToRGB(d.color_clinic_sample, 0.1),
+                "color_profile": hexToRGB(d.color_clinic_sample, 0.3),
                 "color_line": hexToRGB(d.color_clinic_sample, 0.8),
                 "color_line_mean": hexToRGB('#FFFFFF', 0.5)
             };
