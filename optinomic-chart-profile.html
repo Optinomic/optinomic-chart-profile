@@ -16,7 +16,6 @@
 ## Porperties - Descripiton
 ### Options
 
-#### Example
 
 ```JAVASCRIPT
 var options = {
@@ -34,10 +33,14 @@ var options = {
     "show_score_profile_line": true,
     "show_score_circles": true,
     "show_settings_block": true,
+    "allow_toggle_settings_block": false,
     "range_alpha": 0.1,
     "vertical_grid_every_x": 1,
+    "norm_sample": "Z-Werte wurden aufgrund der Normstichprobe nach Franke (2000) berechnet (N=300).",
     "response_title_path": "calculation.info.mz.mz_typ",
-    "response_date_path": "calculation.info.filled"
+    "response_date_path": "calculation.info.filled",
+    "dropout": "calculation.info.mz.dropout",
+    "dropout_reason": "calculation.info.mz.dropout_reason"
 };
 ```
 
@@ -48,7 +51,12 @@ var options = {
 | __max__ | "auto" will find the min/max automatically for you. You can also hardcode the min or max by setting it as a number. _Default: "auto"_ |
 | __item_height__ | The height (px) of every scale from scales. _Default: 50_ |
 | __color_skin__ | measurements colors skin. Possible values so far are: `default`, `zebra`, `pink_dark_to_light`, `indigo_dark_to_light`, `grey_dark_to_light`  _Default: 'default'_ |
-| __show_settings_block__ | Should the elemet render the Settings-Tab? _Default: True_ |
+| __show_settings_block__ | Should the elemet render the Settings-Tab? Bei `false` wird die Übersicht der Messungen angezeigt. _Default: True_ |
+| __allow_toggle_settings_block__ | Darf der User zwischen Übersicht und "Settings-Tab" hin und herwechseln? _Default: True_ |
+| __response_title_path__ | Path to value: Expects a `String` - How should the measurement be called?  |
+| __response_date_path__ | Path to value: Expects a `String` - What ist the date of the measurment?  |
+| __dropout__ | Path to value: Expects a `boolean` - Is this measurement a dropout?  |
+| __dropout_reason__ | Path to value:: Expects a `String` - Reason for the dropout?  |
 
 
 @demo demo/index.html
@@ -87,19 +95,16 @@ var options = {
             min-width: var(--grafic-margin-left) !important;
         }
 
-        div.legend_info {
-            width: 18px;
+        div.legend_right {
+            width: var(--grafic-margin-right) !important;
+            min-width: var(--grafic-margin-right) !important;
         }
 
-        .legend_left_text {
-            padding-left: 6px;
-            padding-right: 7px;
-            text-align: right;
-            color: #9E9E9E;
-            font-size: 12.5px;
-            font-weight: 400;
-            letter-spacing: 0.005em;
+        div.legend_info {
+            width: 22px;
         }
+
+
 
         div.absolute_left_mobile {
             position: absolute;
@@ -147,15 +152,25 @@ var options = {
             overflow: hidden;
         }
 
+        .legend_left_text {
+            padding-left: 6px;
+            padding-right: 7px;
+            text-align: right;
+            color: #9E9E9E !important;
+            font-size: 11.5px;
+            font-weight: 400;
+            letter-spacing: 0.005em;
+        }
+
         .description_item_title {
-            font-size: 12.5px;
+            font-size: 11.5px;
             font-weight: 400;
             letter-spacing: 0.005em;
             color: #212121;
         }
 
         .description_item_text {
-            font-size: 10.5px;
+            font-size: 11.5px;
             font-weight: 400;
             letter-spacing: 0.005em;
             color: #757575;
@@ -272,7 +287,6 @@ var options = {
             display: block;
             font-size: 0.8em;
             margin-top: 2px;
-            max-width: 150px;
         }
 
         paper-tabs {
@@ -323,50 +337,126 @@ var options = {
             width: calc(100% - 4px);
         }
         </style>
-        <!-- START -->
-        <template is="dom-if" if="[[start]]">
-            <div class="center">
+        <span style="height:6px;">&nbsp;</span>
+        <!-- Stichprobe Norm -->
+        <template is="dom-if" if="[[d.norm_sample_defined]]">
+            <template is="dom-if" if="[[d.wide]]">
                 <div class="layout horizontal flex">
+                    <div class="legend_left fade_in">
+                        <p class="legend_left_text" style="text-align:right">
+                            [[t.norm_sample]]
+                        </p>
+                    </div>
                     <div class="flex">
                         <p class="description_item_title">
-                            <span style$="color:[[start.left_color]]">[[start.left_title]]</span>
-                            <br>[[start.left_text]]
+                            [[d.norm_sample]]
+                        </p>
+                    </div>
+                </div>
+            </template>
+            <template is="dom-if" if="[[!d.wide]]">
+                <p class="description_item_title">
+                    <span style="color:#9E9E9E">[[t.norm_sample]]: </span>[[d.norm_sample]]
+                </p>
+            </template>
+        </template>
+        <!-- Stichprobe Klinik -->
+        <template is="dom-if" if="[[cs.available]]">
+            <template is="dom-if" if="[[d.wide]]">
+                <div class="layout horizontal flex">
+                    <div class="legend_left fade_in">
+                        <p class="legend_left_text" style="text-align:right">
+                            [[t.clinic_sample]]
+                        </p>
+                    </div>
+                    <div class="flex">
+                        <p class="description_item_title">
+                            [[cs.name]]
+                        </p>
+                    </div>
+                </div>
+            </template>
+            <template is="dom-if" if="[[!d.wide]]">
+                <p class="description_item_title">
+                    <span style="color:#9E9E9E">[[t.clinic_sample]]: </span>[[cs.name]]
+                </p>
+            </template>
+        </template>
+        <!-- Interpretation -->
+        <template is="dom-if" if="[[d.norm_sample_defined]]">
+            <template is="dom-if" if="[[d.wide]]">
+                <div class="layout horizontal flex">
+                    <div class="legend_left fade_in">
+                        <p class="legend_left_text" style="text-align:right">
+                            [[t.ranges]]
+                        </p>
+                    </div>
+                    <div class="flex">
+                        <p class="description_item_title">
+                            <template is="dom-repeat" items="{{ranges}}" as="range">
+                                <span>{{range.text}} <span style="color:#9E9E9E">({{range.from_to}})</span>
+                                <template is="dom-if" if="{{!range.last}}">,&nbsp;</template>
+                                </span>
+                            </template>
+                        </p>
+                    </div>
+                </div>
+            </template>
+            <template is="dom-if" if="[[!d.wide]]">
+                <p class="description_item_title">
+                    <span style="color:#9E9E9E">[[t.ranges]]: </span>
+                    <template is="dom-repeat" items="{{ranges}}" as="range">
+                        <span>{{range.text}} <span style="color:#9E9E9E">({{range.from_to}})</span>
+                        <template is="dom-if" if="{{!range.last}}">,&nbsp;</template>
+                        </span>
+                    </template>
+                </p>
+            </template>
+        </template>
+        <!-- START -->
+        <template is="dom-if" if="[[start]]">
+            <template is="dom-if" if="[[d.wide]]">
+                <div class="layout horizontal flex">
+                    <div class="legend_left fade_in">
+                        <p class="legend_left_text" style$="text-align:right; color:[[start.left_color]] !important">
+                            [[start.left_title]]
+                        </p>
+                    </div>
+                    <div class="flex">
+                        <p class="description_item_title">
+                            [[start.left_text]]
                         </p>
                     </div>
                     <div class="flex">
                         <p class="description_item_title" style="text-align:right">
-                            <span style$="color:[[start.right_color]]">[[start.right_title]]</span>
-                            <br>[[start.right_text]]
+                            [[start.right_text]]
+                        </p>
+                    </div>
+                    <div class="legend_right fade_in">
+                        <p class="legend_left_text" style$="text-align:left; color:[[start.right_color]] !important">
+                            [[start.right_title]]
                         </p>
                     </div>
                 </div>
-            </div>
-        </template>
-        <!-- Stichprobe Norm -->
-        <template is="dom-if" if="[[d.norm_sample_defined]]">
-            <div class="center">
-                <p class="description_item_title"><b>[[t.norm_sample]]: </b>[[d.norm_sample]]</p>
-            </div>
-        </template>
-        <!-- Stichprobe Klinik -->
-        <template is="dom-if" if="[[cs.available]]">
-            <div class="center">
-                <p class="description_item_title"><b>[[t.clinic_sample]]: </b>[[cs.name]]</p>
-            </div>
-        </template>
-        <!-- Interpretation -->
-        <template is="dom-if" if="[[d.norm_sample_defined]]">
-            <div class="center">
-                <template is="dom-if" if="{{d.ranges_available}}">
-                    <p class="description_item_title"><b>[[t.ranges]]: </b>
-                        <template is="dom-repeat" items="{{ranges}}" as="range">
-                            <span>{{range.text}} <span style="color:#9E9E9E">({{range.from_to}})</span>
-                            <template is="dom-if" if="{{!range.last}}">,&nbsp;</template>
-                            </span>
-                        </template>
-                    </p>
-                </template>
-            </div>
+            </template>
+            <template is="dom-if" if="[[!d.wide]]">
+                <div class="center fade_in">
+                    <div class="layout horizontal flex">
+                        <div class="flex">
+                            <p class="description_item_title">
+                                <span style$="color:[[start.left_color]]">[[start.left_title]]</span>
+                                <br>[[start.left_text]]
+                            </p>
+                        </div>
+                        <div class="flex">
+                            <p class="description_item_title" style="text-align:right">
+                                <span style$="color:[[start.right_color]]">[[start.right_title]]</span>
+                                <br>[[start.right_text]]
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </template>
         </template>
         <!-- GRAFIK -->
         <div id="svg_grafic" class="relative fade_in">
@@ -374,15 +464,24 @@ var options = {
             <template is="dom-if" if="[[draw_chart]]">
                 <div class="absolute_center fade_in">
                     <template is="dom-repeat" items="[[verticalGrid]]" as="g">
-                        <template is="dom-if" if="[[!g.last]]">
-                            <div class="vertical_grid_every_x" style$="left:[[g.x]]px">
-                                <p class="caption flex caption" style="color:black">[[g.value]]</p>
-                            </div>
+                        <template is="dom-if" if="[[d.topnumber_hide_first_last]]">
+                            <template is="dom-if" if="[[!g.first_last]]">
+                                <div class="vertical_grid_every_x" style$="left:[[g.x]]px">
+                                    <p class="caption flex caption" style="color:black">[[g.value]]</p>
+                                </div>
+                            </template>
                         </template>
-                        <template is="dom-if" if="[[g.last]]">
-                            <div class="vertical_grid_every_x" style$="left:[[g.x]]px; text-align:right;">
-                                <p class="caption flex caption" style="color:black;">[[g.value]]</p>
-                            </div>
+                        <template is="dom-if" if="[[!d.topnumber_hide_first_last]]">
+                            <template is="dom-if" if="[[!g.last]]">
+                                <div class="vertical_grid_every_x" style$="left:[[g.x]]px">
+                                    <p class="caption flex caption" style="color:black">[[g.value]]</p>
+                                </div>
+                            </template>
+                            <template is="dom-if" if="[[g.last]]">
+                                <div class="vertical_grid_every_x" style$="left:[[g.x]]px; text-align:right;">
+                                    <p class="caption flex caption" style="color:black;">[[g.value]]</p>
+                                </div>
+                            </template>
                         </template>
                     </template>
                 </div>
@@ -513,26 +612,28 @@ var options = {
             <!-- SVG - Profile -->
             <template is="dom-if" if="[[draw_chart]]" restamp="true">
                 <template id="all_repeat" is="dom-repeat" items="{{_score_profiles}}" as="score">
-                    <template is="dom-if" if="{{score.show}}">
-                        <div class="absolute_center fade_in">
-                            <svg-container id="svg_container_profiles" view-box$="0 0 100 [[d.grafic_height]]" width="[[d.grafic_wight]]px" height$="[[d.grafic_height]]px">
-                                <svg-component is="g" id="scoreProfile" class="fade">
-                                    <template is="dom-if" if="{{d.show_score_profile_line}}">
-                                        <svg-component is="polyline" points$="[[score.points_str]]" fill="none" stroke$="[[score.color]]" stroke-width="5"></svg-component>
-                                    </template>
-                                    <template is="dom-if" if="{{d.show_score_vertical_line}}">
-                                        <template is="dom-repeat" items="[[score.lines]]" as="line">
-                                            <svg-component is="line" x1$="[[line.x]]" y1$="[[line.y1]]" x2$="[[line.x]]" y2$="[[line.y2]]" stroke$="[[score.color_line]]" stroke-width="5"></svg-component>
+                    <template is="dom-if" if="[[!score.dropout_is]]">
+                        <template is="dom-if" if="{{score.show}}">
+                            <div class="absolute_center fade_in">
+                                <svg-container id="svg_container_profiles" view-box$="0 0 100 [[d.grafic_height]]" width="[[d.grafic_wight]]px" height$="[[d.grafic_height]]px">
+                                    <svg-component is="g" id="scoreProfile" class="fade">
+                                        <template is="dom-if" if="{{d.show_score_profile_line}}">
+                                            <svg-component is="polyline" points$="[[score.points_str]]" fill="none" stroke$="[[score.color]]" stroke-width="5"></svg-component>
                                         </template>
-                                    </template>
-                                    <template is="dom-if" if="{{d.show_score_circles}}">
-                                        <template is="dom-repeat" items="[[score.points]]" as="point">
-                                            <svg-component is="circle" r="6" cx$="[[point.x]]" cy$="[[point.y]]" fill$="[[point.fill]]" stroke$="[[point.stroke]]" stroke-width="2"></svg-component>
+                                        <template is="dom-if" if="{{d.show_score_vertical_line}}">
+                                            <template is="dom-repeat" items="[[score.lines]]" as="line">
+                                                <svg-component is="line" x1$="[[line.x]]" y1$="[[line.y1]]" x2$="[[line.x]]" y2$="[[line.y2]]" stroke$="[[score.color_line]]" stroke-width="5"></svg-component>
+                                            </template>
                                         </template>
-                                    </template>
-                                </svg-component>
-                            </svg-container>
-                        </div>
+                                        <template is="dom-if" if="{{d.show_score_circles}}">
+                                            <template is="dom-repeat" items="[[score.points]]" as="point">
+                                                <svg-component is="circle" r="6" cx$="[[point.x]]" cy$="[[point.y]]" fill$="[[point.fill]]" stroke$="[[point.stroke]]" stroke-width="2"></svg-component>
+                                            </template>
+                                        </template>
+                                    </svg-component>
+                                </svg-container>
+                            </div>
+                        </template>
                     </template>
                 </template>
             </template>
@@ -543,25 +644,35 @@ var options = {
                 <!-- Overview -->
                 <div class="layout horizontal flex" style="margin-top: 6px;">
                     <div class="legend_left fade_in" style="margin-top: 2px;">
-                        <template is="dom-if" if="[[d.allow_toggle]]" restamp="true">
+                        <template is="dom-if" if="[[d.allow_toggle_settings_block]]" restamp="true">
                             <paper-icon-button icon="settings" on-tap="__toggleSettingsBlock" style="color:#E0E0E0"></paper-icon-button>
                         </template>
                     </div>
                     <div class="flex">
-                        <g-r-i-d min-column-width="200" gutter="4" row-height="" shown="{{animate_grid_0}}">
-                            <template is="dom-repeat" items="{{_score_profiles}}" as="score">
-                                <div class="layout horizontal flex" style="padding:0; margin: 0">
-                                    <div class="legend_info">
-                                        <p style$="font-size:64px; height:8px;  margin-top:-18px; padding:0; color:[[score.color]] ">
-                                            -
-                                        </p>
+                        <g-r-i-d min-column-width="150" gutter="4" row-height="" shown="{{animate_grid_0}}">
+                            <template is="dom-if" if="[[draw_chart]]" restamp="true">
+                                <template is="dom-repeat" items="{{_score_profiles}}" as="score">
+                                    <div on-tap="__toggleScore" class="layout horizontal flex" style="padding:0; margin:0; cursor: crosshair;">
+                                        <div class="legend_info">
+                                            <template is="dom-if" if="[[score.show]]">
+                                                <p style$="font-size:64px; height:8px;  margin-top:-18px; padding:0; color:[[score.color]] ">
+                                                    -
+                                                </p>
+                                            </template>
+                                        </div>
+                                        <div class="flex" style="padding:0; margin: 0">
+                                            <p class="description_item_title">
+                                                [[score.title]] [[score.show]]
+                                                <template is="dom-if" if="[[score.dropout_is]]">
+                                                    | [[score.dropout_reason]]
+                                                </template>
+                                                <span style="color:#9E9E9E"><br>[[score.date]]</span>
+                                                <template is="dom-if" if="[[score.dropout_is]]"> | <span style="color:#F44336">Dropout</span></template>
+                                                &nbsp;
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div class="flex" style="padding:0; margin: 0">
-                                        <p class="description_item_title">
-                                            {{score.title}}<span style="color:#9E9E9E"><br>{{score.date}}</span>&nbsp;
-                                        </p>
-                                    </div>
-                                </div>
+                                </template>
                             </template>
                         </g-r-i-d>
                     </div>
@@ -569,7 +680,7 @@ var options = {
             </template>
             <div hidden="[[!d.show_settings_block]]">
                 <div class="layout horizontal flex">
-                    <template is="dom-if" if="[[d.allow_toggle]]" restamp="true">
+                    <template is="dom-if" if="[[d.allow_toggle_settings_block]]" restamp="true">
                         <div class="fade_in">
                             <paper-icon-button icon="close" on-tap="__toggleSettingsBlock" style="color:#E0E0E0;margin-top:8px;"></paper-icon-button>
                         </div>
@@ -583,67 +694,77 @@ var options = {
                     </div>
                 </div>
                 <iron-pages selected="{{d.tab_selected}}">
-                    <div class="config_page">
-                        <template is="dom-if" if="[[d.show_settings_block]]" restamp="true">
+                    <template is="dom-if" if="[[d.show_settings_block]]" restamp="true">
+                        <div class="config_page">
                             <!-- Toggle Messungen -->
                             <g-r-i-d min-column-width="250" gutter="4" row-height="" shown="{{animate_grid_0}}">
                                 <template is="dom-repeat" items="{{_score_profiles}}" as="score">
-                                    <div class="item" style$="border:1px solid {{score.color}}; background-color:{{score.color_rgb}};">
-                                        <paper-checkbox checked="{{score.show}}" class="styled">
-                                            <span>{{score.title}}</span>
-                                            <span class="subtitle">{{score.date}}</span>
-                                        </paper-checkbox>
+                                    <template is="dom-if" if="[[score.dropout_is]]">
+                                        <div class="item" style="border:1px solid #F44336; background-color:#FFEBEE;">
+                                            <paper-checkbox checked="{{score.show}}" class="styled" disabled="[[score.dropout_is]]">
+                                                <span>[[score.title]] | <span style="color:#F44336">Dropout</span></span>
+                                                <span class="subtitle">[[score.date]] | [[score.dropout_reason]]</span>
+                                            </paper-checkbox>
+                                        </div>
+                                    </template>
+                                    <template is="dom-if" if="[[!score.dropout_is]]">
+                                        <div class="item" style$="border:1px solid {{score.color}}; background-color:{{score.color_rgb}};">
+                                            <paper-checkbox checked="{{score.show}}" class="styled">
+                                                <span>[[score.title]]</span>
+                                                <span class="subtitle">[[score.date]]</span>
+                                            </paper-checkbox>
+                                        </div>
+                                    </template>
+                                </template>
+                            </g-r-i-d>
+                        </div>
+                        <div class="config_page fade_in">
+                            <!-- Clinic-Sample-Wrapper -->
+                            <g-r-i-d id="grid_clinic_sample" colums="1" gutter="4" row-height="" shown="{{animate_grid_1}}">
+                                <template is="dom-if" if="{{!clinic_samples.empty}}">
+                                    <template is="dom-repeat" items="{{_clinic_sample_profiles}}" as="cs">
+                                        <div class="item" style$="border: 1px solid {{cs.color}}; background-color: {{cs.color_bg}}; width:100%;">
+                                            <paper-checkbox checked="{{cs.show}}" class="styled">
+                                                <span>{{cs.name}}</span>
+                                            </paper-checkbox>
+                                        </div>
+                                    </template>
+                                    <div class="item" style="border: 1px solid black; width:100%;">
+                                        <optinomic-clinic-sample-selector on-clinic-sample-changed="__csChanged" data_dive="[[clinic_sample_dive]]" clinic_sample="[[clinic_samples]]" data_dive_path="statistics" return_data="{{clinic_sample_data}}"></optinomic-clinic-sample-selector>
+                                    </div>
+                                </template>
+                                <template is="dom-if" if="{{clinic_samples.empty}}">
+                                    <div class="item" style="border: 1px solid #263238; background-color: #ECEFF1; width:100%;">
+                                        <span style="color: #263238;">Keine Klinichstichprobe vorhanden.</span>
+                                        <br>
+                                        <span class="subtitle">No clinic samples availabe.</span>
                                     </div>
                                 </template>
                             </g-r-i-d>
-                        </template>
-                    </div>
-                    <div class="config_page fade_in">
-                        <!-- Clinic-Sample-Wrapper -->
-                        <g-r-i-d id="grid_clinic_sample" colums="1" gutter="4" row-height="" shown="{{animate_grid_1}}">
-                            <template is="dom-if" if="{{!clinic_samples.empty}}">
-                                <template is="dom-repeat" items="{{_clinic_sample_profiles}}" as="cs">
-                                    <div class="item" style$="border: 1px solid {{cs.color}}; background-color: {{cs.color_bg}}; width:100%;">
-                                        <paper-checkbox checked="{{cs.show}}" class="styled">
-                                            <span>{{cs.name}}</span>
-                                        </paper-checkbox>
+                        </div>
+                        <div class="config_page fade_in">
+                            <!-- Ranges -->
+                            <g-r-i-d min-column-width="360" gutter="4" row-height="" shown="{{animate_grid_2}}">
+                                <template is="dom-if" if="{{d.ranges_available}}">
+                                    <template is="dom-repeat" items="{{ranges}}" as="range">
+                                        <div class="item" style$="border: 1px solid {{range.color}}; background-color: {{range.color_bg}};">
+                                            <paper-checkbox checked="{{range.show}}" class="styled">
+                                                <span>{{range.text}}</span>
+                                                <span class="subtitle">{{range.from_to}}</span>
+                                            </paper-checkbox>
+                                        </div>
+                                    </template>
+                                </template>
+                                <template is="dom-if" if="{{!d.ranges_available}}">
+                                    <div class="item" style="border: 1px solid #263238; background-color: #ECEFF1;">
+                                        <span style="color: #263238;">Keine Interpretation vorhanden.</span>
+                                        <br>
+                                        <span class="subtitle">No ranges availabe.</span>
                                     </div>
                                 </template>
-                                <div class="item" style="border: 1px solid black; width:100%;">
-                                    <optinomic-clinic-sample-selector on-clinic-sample-changed="__csChanged" data_dive="[[clinic_sample_dive]]" clinic_sample="[[clinic_samples]]" data_dive_path="statistics" return_data="{{clinic_sample_data}}"></optinomic-clinic-sample-selector>
-                                </div>
-                            </template>
-                            <template is="dom-if" if="{{clinic_samples.empty}}">
-                                <div class="item" style="border: 1px solid #263238; background-color: #ECEFF1; width:100%;">
-                                    <span style="color: #263238;">Keine Klinichstichprobe vorhanden.</span>
-                                    <br>
-                                    <span class="subtitle">No clinic samples availabe.</span>
-                                </div>
-                            </template>
-                        </g-r-i-d>
-                    </div>
-                    <div class="config_page fade_in">
-                        <!-- Ranges -->
-                        <g-r-i-d min-column-width="360" gutter="4" row-height="" shown="{{animate_grid_2}}">
-                            <template is="dom-if" if="{{d.ranges_available}}">
-                                <template is="dom-repeat" items="{{ranges}}" as="range">
-                                    <div class="item" style$="border: 1px solid {{range.color}}; background-color: {{range.color_bg}};">
-                                        <paper-checkbox checked="{{range.show}}" class="styled">
-                                            <span>{{range.text}}</span>
-                                            <span class="subtitle">{{range.from_to}}</span>
-                                        </paper-checkbox>
-                                    </div>
-                                </template>
-                            </template>
-                            <template is="dom-if" if="{{!d.ranges_available}}">
-                                <div class="item" style="border: 1px solid #263238; background-color: #ECEFF1;">
-                                    <span style="color: #263238;">Keine Interpretation vorhanden.</span>
-                                    <br>
-                                    <span class="subtitle">No ranges availabe.</span>
-                                </div>
-                            </template>
-                        </g-r-i-d>
-                    </div>
+                            </g-r-i-d>
+                        </div>
+                    </template>
                 </iron-pages>
             </div>
         </div>
@@ -738,27 +859,20 @@ var options = {
 
         __init: function() {
             // start @ Properties
-            this.start = this.start === undefined ?
-                null :
-                this.start;
+            this.start = this.start === undefined ? null : this.start;
 
             // Scales @ Properties
-            this.scales = this.scales === undefined ? [] :
-                this.scales;
+            this.scales = this.scales === undefined ? [] : this.scales;
 
             // Ranges @ Properties
-            this.ranges = this.ranges === undefined ? [] :
-                this.ranges;
+            this.ranges = this.ranges === undefined ? [] : this.ranges;
+
 
             // Scores @ Properties
-            this.scores = this.scores === undefined ? {} :
-                this.scores;
+            this.scores = this.scores === undefined ? {} : this.scores;
 
             // clinic_samples @ Properties
-            this.clinic_samples = this.clinic_samples === undefined ? {
-                    "empty": true
-                } :
-                this.clinic_samples;
+            this.clinic_samples = this.clinic_samples === undefined ? { "empty": true } : this.clinic_samples;
 
             var init_dive_path = [];
             if ('dimensions' in this.clinic_samples) {
@@ -767,83 +881,54 @@ var options = {
                 });
             };
 
-            this.clinic_sample_dive = this.clinic_sample_dive === undefined ?
-                init_dive_path :
-                this.clinic_sample_dive;
+            this.clinic_sample_dive = this.clinic_sample_dive === undefined ? init_dive_path : this.clinic_sample_dive;
 
             // Options @ Properties
-            var d = this.options === undefined ? {} :
-                this.options;
-            d.color_grid = d.color_grid === undefined ?
-                "#795548" :
-                d.color_grid;
-            d.color_grid_baseline = d.color_grid_baseline === undefined ?
-                hexToRGB(d.color_grid, 0.4) :
-                d.color_grid_baseline;
-            d.color_clinic_sample = d.color_clinic_sample === undefined ?
-                "#673AB7" :
-                d.color_clinic_sample;
+            var d = this.options === undefined ? {} : this.options;
+            d.color_grid = d.color_grid === undefined ? "#795548" : d.color_grid;
+            d.topnumber_hide_first_last = d.topnumber_hide_first_last === undefined ? false : d.topnumber_hide_first_last;
 
-            d.show_baseline = d.show_baseline === undefined ?
-                false :
-                d.show_baseline;
-            d.show_score_vertical_line = d.show_score_vertical_line === undefined ?
-                false :
-                d.show_score_vertical_line;
-            d.show_score_profile_line = d.show_score_profile_line === undefined ?
-                true :
-                d.show_score_profile_line;
-            d.show_score_circles = d.show_score_circles === undefined ?
-                true :
-                d.show_score_circles;
 
-            d.show_scale_text = d.show_scale_text === undefined ?
-                false :
-                d.show_scale_text;
+            d.color_grid_baseline = d.color_grid_baseline === undefined ? hexToRGB(d.color_grid, 0.4) : d.color_grid_baseline;
+            d.color_clinic_sample = d.color_clinic_sample === undefined ? "#673AB7" : d.color_clinic_sample;
 
-            d.show_settings_block = d.show_settings_block === undefined ?
-                false :
-                d.show_settings_block;
+            d.show_baseline = d.show_baseline === undefined ? false : d.show_baseline;
+            d.show_score_vertical_line = d.show_score_vertical_line === undefined ? false : d.show_score_vertical_line;
+            d.show_score_profile_line = d.show_score_profile_line === undefined ? true : d.show_score_profile_line;
+            d.show_score_circles = d.show_score_circles === undefined ? true : d.show_score_circles;
 
-            d.allow_toggle = d.allow_toggle === undefined ?
-                true :
-                d.allow_toggle;
+            d.show_scale_text = d.show_scale_text === undefined ? false : d.show_scale_text;
 
-            d.item_height = d.item_height === undefined ?
-                50 :
-                d.item_height;
-            d.item_text_left = d.item_text_left === undefined ?
-                120 :
-                d.item_text_left;
+            d.show_settings_block = d.show_settings_block === undefined ? false : d.show_settings_block;
+
+            d.allow_toggle_settings_block = d.allow_toggle_settings_block === undefined ? true : d.allow_toggle_settings_block;
+
+            d.item_height = d.item_height === undefined ? 50 : d.item_height;
+            d.item_text_left = d.item_text_left === undefined ? 120 : d.item_text_left;
             d.item_text_left_show = true;
             if (d.item_text_left === 0) {
                 d.item_text_left_show = false;
             };
-            d.item_text_right = d.item_text_right === undefined ?
-                120 :
-                d.item_text_right;
+            d.item_text_right = d.item_text_right === undefined ? 120 : d.item_text_right;
             d.item_text_right_show = true;
             if (d.item_text_right === 0) {
                 d.item_text_right_show = false;
             };
-            d.response_title_path = d.response_title_path === undefined ?
-                null :
-                d.response_title_path;
-            d.response_date_path = d.response_date_path === undefined ?
-                null :
-                d.response_date_path;
-            d.min = d.min === undefined ?
-                "auto" :
-                d.min;
-            d.max = d.max === undefined ?
-                "auto" :
-                d.max;
-            d.range_alpha = d.range_alpha === undefined ?
-                0.1 :
-                d.range_alpha;
-            d.vertical_grid_every_x = d.vertical_grid_every_x === undefined ?
-                1 :
-                d.vertical_grid_every_x;
+
+            // Legende Minimum links
+            if (d.item_text_left <= 62) {
+                d.legend_left = 62;
+            } else {
+                d.legend_left = d.item_text_left;
+            };
+
+
+            d.response_title_path = d.response_title_path === undefined ? null : d.response_title_path;
+            d.response_date_path = d.response_date_path === undefined ? null : d.response_date_path;
+            d.min = d.min === undefined ? "auto" : d.min;
+            d.max = d.max === undefined ? "auto" : d.max;
+            d.range_alpha = d.range_alpha === undefined ? 0.1 : d.range_alpha;
+            d.vertical_grid_every_x = d.vertical_grid_every_x === undefined ? 1 : d.vertical_grid_every_x;
 
             d.ranges_available = false;
             if (this.ranges.length > 0) {
@@ -859,15 +944,11 @@ var options = {
 
             // Resize
             d.wide = false;
-            d.wide_breakpoint = d.wide_breakpoint === undefined ?
-                520 :
-                d.wide_breakpoint;
+            d.wide_breakpoint = d.wide_breakpoint === undefined ? 520 : d.wide_breakpoint;
 
             // Grafic Size
             d.grafic_top_space = 20;
-            d.grafic_width = d.grafic_width === undefined ?
-                480 :
-                d.grafic_width;
+            d.grafic_width = d.grafic_width === undefined ? 480 : d.grafic_width;
             d.grafic_margin_left = d.item_text_left;
             d.grafic_margin_right = d.item_text_right;
             d.grafic_text_visibility = 'hidden';
@@ -877,9 +958,7 @@ var options = {
             d.tab_selected = 0;
 
             // Color Skin
-            d.color_skin = d.color_skin === undefined ?
-                'default' :
-                d.color_skin;
+            d.color_skin = d.color_skin === undefined ? 'default' : d.color_skin;
 
             // console.log('(✓) Options', d);
 
@@ -887,7 +966,8 @@ var options = {
             this.set('d', d);
         },
 
-        __setScales: function() {
+        __setScales: function(full) {
+            full = full === undefined ? true : false;
             var d = this.get('d');
             var scales = this.get('scales');
             var scores = this.get('scores.data');
@@ -949,7 +1029,9 @@ var options = {
                     if ((scores !== undefined) && (scores !== null)) {
                         scores.forEach(function(score, scoreID) {
                             var score_obj = {
-                                "value": null
+                                "value": null,
+                                "dropout_is": false,
+                                "dropout_reason": ""
                             };
 
                             // Get Values
@@ -969,11 +1051,21 @@ var options = {
                                 score_obj.date = null
                             };
 
+                            if ("dropout" in d) {
+                                if (d.dropout) {
+                                    if (this.__getScorePath(score, d.dropout) === true) {
+                                        score_obj.dropout_is = true;
+                                        score_obj.dropout_reason = this.__getScorePath(score, d.dropout_reason);
+                                    };
+                                };
+                            };
+
                             scale.scores.push(score_obj);
                         });
                     };
                 });
             };
+
             // Auto Min/Max
             var do_min = false;
             if ((d.min === 'auto') || (d.min === undefined)) {
@@ -1001,9 +1093,11 @@ var options = {
             this.set('scales_set', true);
 
             // console.log('(✓) Scales', this.scales); Follow the white Rabbit
-            this.__setRanges();
-            this.__setVerticalGrid();
-            this.__setScoreProfiles();
+            if (full) {
+                this.__setRanges();
+                this.__setVerticalGrid();
+                this.__setScoreProfiles();
+            };
         },
 
         __setVerticalGrid: function() {
@@ -1024,7 +1118,8 @@ var options = {
                     "y2": d.grafic_height - 1,
                     "zero": false,
                     "first": false,
-                    "last": false
+                    "last": false,
+                    "first_last": false
                 };
 
                 if (i === 0) {
@@ -1037,6 +1132,10 @@ var options = {
 
                 if ((i - d.item_max) === 0) {
                     grid_object.last = true;
+                };
+
+                if (grid_object.first || grid_object.last) {
+                    grid_object.first_last = true;
                 };
 
                 if ((every_counter === every) || (i === d.item_min) || (i === d.item_max) || (i === 0)) {
@@ -1144,8 +1243,21 @@ var options = {
                         "color": my_color,
                         "color_line": hexToRGB(my_color, 0.8),
                         "color_rgb": hexToRGB(my_color, 0.1),
-                        "show": true
+                        "dropout_is": score.dropout_is,
+                        "dropout_reason": score.dropout_reason
                     };
+
+                    if ("show" in score) {
+                        score_obj.show = score.show;
+                        console.error(score);
+                    } else {
+                        score_obj.show = true;
+                    };
+
+                    if (score.dropout_is) {
+                        score_obj.show = false;
+                    };
+
 
                     var points_obj = {
                         "value": score.value,
@@ -1172,22 +1284,18 @@ var options = {
                         });
                     };
 
-                    scores_points[scoreID] = scores_points[scoreID] === undefined ?
-                        score_obj :
-                        scores_points[scoreID];
+                    scores_points[scoreID] = scores_points[scoreID] === undefined ? score_obj : scores_points[scoreID];
                     scores_points[scoreID].points.push(points_obj);
                     scores_points[scoreID].points_str = scores_points[scoreID].points_str + score.value_x + ',' + score.value_y + ' ';
 
-                    scores_lines[scoreID] = scores_lines[scoreID] === undefined ?
-                        score_obj :
-                        scores_lines[scoreID];
+                    scores_lines[scoreID] = scores_lines[scoreID] === undefined ? score_obj : scores_lines[scoreID];
                     scores_lines[scoreID].lines.push(line_obj);
 
                 });
             });
 
             this.set('_score_profiles', scores_points);
-            // console.log('(✓) score_profiles', this._score_profiles);
+            console.log('(✓) score_profiles', this._score_profiles);
         },
 
         __csChanged: function(e) {
@@ -1491,7 +1599,7 @@ var options = {
 
                     // console.error('__redrawChart Now');
 
-                    this.__setScales(false);
+                    this.__setScales(true);
 
                     if (this._clinic_sample_profiles !== undefined) {
                         if (this._clinic_sample_profiles[0].name !== undefined) {
@@ -1510,6 +1618,16 @@ var options = {
 
         __toggleSettingsBlock: function() {
             this.set('d.show_settings_block', !this.d.show_settings_block);
+        },
+
+        __toggleScore: function(oEvent) {
+            _score_profiles = this.get('_score_profiles');
+            var current_score = oEvent.model.get('score');
+            current_score.show = !current_score.show;
+            _score_profiles[current_score.id] = current_score;
+            this.set('_score_profiles', _score_profiles);
+            this.__redrawChart();
+            console.warn('___toggleScore', current_score, _score_profiles);
         },
 
         onInit: function() {
@@ -1603,7 +1721,7 @@ var options = {
 
         if (id > colors.length - 1) {
             var floor = Math.floor(id / colors.length);
-            var corrected = id - ( floor * colors.length);
+            var corrected = id - (floor * colors.length);
             return colors[corrected];
         } else {
             return colors[id];
