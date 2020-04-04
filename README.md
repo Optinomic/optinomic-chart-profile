@@ -1,6 +1,9 @@
 # \<optinomic-chart-profile\>
-
 `optinomic-chart-profile` creates awesome Chart-Profiles. Designed for Optionmic-Apps.
+
+> *Depreciated:* This repo is no longer maintained - check: https://github.com/ottigerb/optinomic-profile-chart!
+
+
 
 ## Porperties - Descripiton
 
